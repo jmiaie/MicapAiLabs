@@ -20,7 +20,7 @@ import json
 import sys
 from pathlib import Path
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 
 # ---------------------------------------------------------------------------

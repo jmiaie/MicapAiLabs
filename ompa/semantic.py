@@ -74,7 +74,12 @@ class SemanticIndex:
 
     def index_file(self, path: Path) -> None:
         """Index a single file (or re-index if already present)."""
-        if not self._initialized or not path.exists():
+        if not path.exists():
+            return
+
+        if not self._initialized:
+            self._init_model()
+        if self._model is None:
             return
 
         try:
@@ -143,6 +148,8 @@ class SemanticIndex:
         count = 0
 
         if not self._initialized:
+            self._init_model()
+        if self._model is None:
             return 0
 
         for path in vault_path.rglob("*.md"):

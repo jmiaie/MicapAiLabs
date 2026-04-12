@@ -294,6 +294,21 @@ class TestVault:
             loaded = Note.from_file(path)
             assert "日本語" in loaded.content
 
+    def test_safe_resolve_prefix_collision(self):
+        """_safe_resolve should block prefix-collision bypasses like vault vs vault-evil."""
+        from ompa.vault import _safe_resolve
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base = Path(tmpdir) / "vault"
+            base.mkdir()
+            evil = Path(tmpdir) / "vault-evil"
+            evil.mkdir()
+            # This should NOT be allowed — "vault-evil" starts with "vault" as a string
+            # but is NOT a child of "vault"
+            with pytest.raises(ValueError, match="Path traversal blocked"):
+                _safe_resolve(base, "../vault-evil/secret.md")
+
     def test_search_by_name(self):
         from ompa import Vault
 
@@ -1036,6 +1051,49 @@ class TestDualVault:
         assert c.classify_vault_target("We decided to use Postgres") == "shared"
         assert c.classify_vault_target("random stuff") == "ambiguous"
 
+    def test_export_to_shared_path_traversal_blocked(self):
+        """export_to_shared() should reject note paths outside personal vault."""
+        from ompa import Ompa
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            shared = Path(tmpdir) / "shared"
+            personal = Path(tmpdir) / "personal"
+            ao = Ompa(
+                shared_vault_path=shared,
+                personal_vault_path=personal,
+                enable_semantic=False,
+            )
+            result = ao.export_to_shared("../../outside.md", confirm=False)
+            assert result["success"] is False
+            assert "Invalid note_path" in result["error"]
+
+    def test_import_to_personal_path_traversal_blocked(self):
+        """import_to_personal() should reject note paths outside shared vault."""
+        from ompa import Ompa
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            shared = Path(tmpdir) / "shared"
+            personal = Path(tmpdir) / "personal"
+            ao = Ompa(
+                shared_vault_path=shared,
+                personal_vault_path=personal,
+                enable_semantic=False,
+            )
+            result = ao.import_to_personal("../../outside.md")
+            assert result["success"] is False
+            assert "Invalid note_path" in result["error"]
+
+    def test_write_path_traversal_blocked(self):
+        """write() should reject file paths that escape the vault."""
+        from ompa import Ompa
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ao = Ompa(tmpdir, enable_semantic=False)
+            with pytest.raises(ValueError, match="Path traversal blocked"):
+                ao.write("evil content", file_path="../../etc/passwd")
+
     def test_dual_vault_sync(self):
         """sync() should sync both vaults in dual mode."""
         from ompa import Ompa
@@ -1064,3 +1122,34 @@ class TestDualVault:
             assert result["kg_triples"] > 0
             assert "personal_kg_triples" in result
             assert result["personal_kg_triples"] > 0
+
+
+class TestSemanticIndex:
+    """Test semantic index behavior."""
+
+    def test_index_vault_initializes_model(self):
+        """index_vault should lazy-init the model if not yet initialized."""
+        from ompa.semantic import SemanticIndex
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            idx = SemanticIndex(index_path=Path(tmpdir) / "idx")
+            assert idx._initialized is False
+
+            # Monkeypatch _init_model to track that it was called
+            called = []
+
+            def fake_init():
+                called.append(True)
+                idx._initialized = True
+                idx._model = "fake"
+
+            idx._init_model = fake_init
+
+            vault = Path(tmpdir) / "vault"
+            vault.mkdir()
+            (vault / "test.md").write_text("Hello world content here", encoding="utf-8")
+
+            count = idx.index_vault(vault)
+            assert len(called) == 1  # _init_model was triggered
+            assert count >= 1

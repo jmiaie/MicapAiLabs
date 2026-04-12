@@ -23,8 +23,10 @@ def _safe_resolve(base: Path, untrusted: str) -> Path:
     """
     resolved = (base / untrusted).resolve()
     base_resolved = base.resolve()
-    if not str(resolved).startswith(str(base_resolved)):
-        raise ValueError(f"Path traversal blocked: {untrusted!r} escapes {base}")
+    try:
+        resolved.relative_to(base_resolved)
+    except ValueError as e:
+        raise ValueError(f"Path traversal blocked: {untrusted!r} escapes {base}") from e
     return resolved
 
 
@@ -237,7 +239,9 @@ class Vault:
         path = self.config.brain_folder / f"{safe_name}.md"
         path = path.resolve()
         # Ensure we stay within brain folder
-        if not str(path).startswith(str(self.config.brain_folder.resolve())):
+        try:
+            path.relative_to(self.config.brain_folder.resolve())
+        except ValueError:
             raise ValueError(f"Invalid brain note name: {name!r}")
         if path.exists():
             return Note.from_file(path)
@@ -251,7 +255,9 @@ class Vault:
         safe_name = Path(name).name  # Strip any directory components
         path = self.config.brain_folder / f"{safe_name}.md"
         path = path.resolve()
-        if not str(path).startswith(str(self.config.brain_folder.resolve())):
+        try:
+            path.relative_to(self.config.brain_folder.resolve())
+        except ValueError:
             raise ValueError(f"Invalid brain note name: {name!r}")
         path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -341,7 +347,9 @@ class Vault:
         except ValueError:
             # Also handle absolute paths that are within the vault
             path = Path(file_path).resolve()
-            if not str(path).startswith(str(self.vault_path)):
+            try:
+                path.relative_to(self.vault_path)
+            except ValueError:
                 return {"valid": False, "warnings": ["Path is outside the vault"]}
 
         warnings = []

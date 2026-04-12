@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
-from .vault import Vault, Note
+from .vault import Vault, Note, _safe_resolve
 from .palace import Palace
 from .knowledge_graph import KnowledgeGraph
 from .hooks import HookManager, HookResult
@@ -575,7 +575,7 @@ class Ompa:
             "vault": target.value,
         }
 
-        full_path = target_vault.vault_path / file_path
+        full_path = _safe_resolve(target_vault.vault_path, file_path)
         note = Note(path=full_path, frontmatter=frontmatter, content=content)
         note.save()
 
@@ -610,9 +610,15 @@ class Ompa:
         if not self.is_dual_vault:
             return {"success": False, "error": "Not in dual-vault mode"}
 
+        # Validate paths upfront to prevent traversal
+        try:
+            source = _safe_resolve(self.dual_config.personal_path, note_path)
+            target = _safe_resolve(self.dual_config.shared_path, note_path)
+        except ValueError:
+            return {"success": False, "error": f"Invalid note_path: {note_path}"}
+
         if self.dual_config.isolation_mode == IsolationMode.STRICT and confirm:
             # In strict mode, first call returns preview for confirmation
-            source = self.dual_config.personal_path / note_path
             if not source.exists():
                 return {"success": False, "error": f"Note not found: {note_path}"}
 
@@ -626,13 +632,12 @@ class Ompa:
                 "success": True,
                 "action": "preview",
                 "source": str(source),
-                "target": str(self.dual_config.shared_path / note_path),
+                "target": str(target),
                 "sanitized": sanitize,
                 "preview": content[:500],
             }
 
         # Perform the export
-        source = self.dual_config.personal_path / note_path
         if not source.exists():
             return {"success": False, "error": f"Note not found: {note_path}"}
 
@@ -644,7 +649,6 @@ class Ompa:
         note.frontmatter["vault"] = "shared"
         note.frontmatter.pop("@private", None)
 
-        target = self.dual_config.shared_path / note_path
         note.path = target
         note.save()
 
@@ -677,7 +681,13 @@ class Ompa:
         if not self.is_dual_vault:
             return {"success": False, "error": "Not in dual-vault mode"}
 
-        source = self.dual_config.shared_path / note_path
+        # Validate paths upfront to prevent traversal
+        try:
+            source = _safe_resolve(self.dual_config.shared_path, note_path)
+            target = _safe_resolve(self.dual_config.personal_path, note_path)
+        except ValueError:
+            return {"success": False, "error": f"Invalid note_path: {note_path}"}
+
         if not source.exists():
             return {"success": False, "error": f"Note not found: {note_path}"}
 
@@ -688,7 +698,6 @@ class Ompa:
         if link_back:
             note.content += f"\n\n---\n*Imported from shared: [[{note_path}]]*"
 
-        target = self.dual_config.personal_path / note_path
         note.path = target
         note.save()
 
