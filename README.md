@@ -12,8 +12,8 @@ OMPA gives any AI agent persistent memory with vault conventions, palace navigat
 
 This project is a synthesis of ideas and code from the AI agent memory community:
 
-- **[MemPalace](https://github.com/corbt/mem_palace)** by Kyle Corbitt — The palace metaphor (wings/rooms/drawers), temporal knowledge graph design, and verbatim storage approach. MemPalace proved 96.6% R@5 on LongMemEval with raw verbatim storage.
-- **[obsidian-mind](https://github.com/obsidian-ai/obsidian-mind)** — Vault structure (brain/work/org/perf), wikilink conventions, frontmatter validation, and session lifecycle patterns.
+- **[MemPalace]** by Kyle Corbitt *(repo discontinued)* — The palace metaphor (wings/rooms/drawers), temporal knowledge graph design, and verbatim storage approach. MemPalace proved 96.6% R@5 on LongMemEval with raw verbatim storage.
+- **[obsidian-mind](https://github.com/obsidianmd/obsidian-help)** — Vault structure (brain/work/org/perf), wikilink conventions, frontmatter validation, and session lifecycle patterns.
 - **Claude Code / Anthropic** — Hook patterns and agent-tool interaction models.
 - **OpenClaw** — Framework-agnostic agent runtime that inspired the "universal" design goal.
 
