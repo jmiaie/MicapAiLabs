@@ -283,6 +283,20 @@ class TestVault:
             with pytest.raises((ValueError, FileNotFoundError)):
                 vault.create_from_template("../../etc/evil", "../../tmp/pwned.md")
 
+    def test_safe_resolve_prefix_collision_blocked(self):
+        from pathlib import Path
+        from ompa.vault import _safe_resolve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            base = root / "vault"
+            sibling = root / "vault-evil"
+            base.mkdir()
+            sibling.mkdir()
+
+            with pytest.raises(ValueError, match="Path traversal blocked"):
+                _safe_resolve(base, "../vault-evil/pwn.md")
+
     def test_note_save_utf8(self):
         from ompa.vault import Note
         from pathlib import Path
@@ -902,6 +916,22 @@ class TestDualVault:
             result = ao.write("password: hunter2")
             assert result["vault"] == "personal"
 
+    def test_write_path_traversal_blocked(self):
+        """write() should reject paths that escape the target vault."""
+        from ompa import Ompa
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            shared = Path(tmpdir) / "shared"
+            personal = Path(tmpdir) / "personal"
+            ao = Ompa(
+                shared_vault_path=shared,
+                personal_vault_path=personal,
+                enable_semantic=False,
+            )
+            with pytest.raises(ValueError, match="Path traversal blocked"):
+                ao.write("escaped", vault="shared", file_path="../escape.md")
+
     def test_export_to_shared(self):
         """export_to_shared should copy note to shared vault."""
         from ompa import Ompa
@@ -926,6 +956,24 @@ class TestDualVault:
             result = ao.export_to_shared("brain/idea.md", confirm=False)
             assert result["success"] is True
             assert (shared / "brain" / "idea.md").exists()
+
+    def test_export_to_shared_path_traversal_blocked(self):
+        """export_to_shared() should reject note paths outside personal vault."""
+        from ompa import Ompa
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            shared = Path(tmpdir) / "shared"
+            personal = Path(tmpdir) / "personal"
+            ao = Ompa(
+                shared_vault_path=shared,
+                personal_vault_path=personal,
+                enable_semantic=False,
+            )
+
+            result = ao.export_to_shared("../../outside.md", confirm=False)
+            assert result["success"] is False
+            assert "Invalid note_path" in result["error"]
 
     def test_export_sanitizes_content(self):
         """export_to_shared should redact credentials."""
@@ -976,6 +1024,62 @@ class TestDualVault:
             assert result["success"] is True
             imported = (personal / "brain" / "spec.md").read_text(encoding="utf-8")
             assert "Imported from shared" in imported
+
+    def test_import_to_personal_path_traversal_blocked(self):
+        """import_to_personal() should reject note paths outside shared vault."""
+        from ompa import Ompa
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            shared = Path(tmpdir) / "shared"
+            personal = Path(tmpdir) / "personal"
+            ao = Ompa(
+                shared_vault_path=shared,
+                personal_vault_path=personal,
+                enable_semantic=False,
+            )
+
+            result = ao.import_to_personal("../../outside.md", link_back=True)
+            assert result["success"] is False
+            assert "Invalid note_path" in result["error"]
+
+
+class TestSemanticIndex:
+    """Test semantic index lazy initialization behavior."""
+
+    def test_index_vault_initializes_model(self, monkeypatch):
+        """index_vault() should initialize the model before indexing."""
+        from pathlib import Path
+        from ompa.semantic import SemanticIndex
+
+        class DummyEmbedding(list):
+            def tolist(self):
+                return list(self)
+
+        class DummyModel:
+            def encode(self, _text):
+                return DummyEmbedding([0.1, 0.2, 0.3])
+
+        def fake_init(self):
+            self._model = DummyModel()
+            self._initialized = True
+
+        monkeypatch.setattr(SemanticIndex, "_init_model", fake_init)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            vault_path = Path(tmpdir)
+            note = vault_path / "brain" / "Semantic.md"
+            note.parent.mkdir(parents=True, exist_ok=True)
+            note.write_text(
+                "This is a sufficiently long semantic indexing note with many words.",
+                encoding="utf-8",
+            )
+
+            index = SemanticIndex(index_path=vault_path / ".palace" / "semantic_index")
+            indexed = index.index_vault(vault_path)
+
+            assert indexed >= 1
+            assert len(index.chunks) >= 1
 
     def test_cross_vault_search(self):
         """search() with vaults=['shared','personal'] should search both."""

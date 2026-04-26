@@ -20,6 +20,9 @@ import json
 import sys
 from pathlib import Path
 
+from ompa import Ompa
+from ompa.config import make_ompa
+
 __version__ = "0.4.1"
 
 
@@ -28,38 +31,12 @@ __version__ = "0.4.1"
 # ---------------------------------------------------------------------------
 
 
-def _load_core():
-    """Lazy-load the core module."""
-    from ompa import Ompa
-
-    return Ompa
-
-
-def _make_ompa(arguments: dict, enable_semantic: bool = False):
-    """Create an Ompa instance from MCP arguments, supporting dual vault."""
-    AO = _load_core()
-    vault_path = str(arguments.get("vault_path", "."))
-    shared_vault = arguments.get("shared_vault_path")
-    personal_vault = arguments.get("personal_vault_path")
-    isolation = arguments.get("isolation_mode", "strict")
-
-    if shared_vault and personal_vault:
-        return AO(
-            shared_vault_path=shared_vault,
-            personal_vault_path=personal_vault,
-            isolation_mode=isolation,
-            enable_semantic=enable_semantic,
-        )
-    return AO(vault_path=vault_path, enable_semantic=enable_semantic)
-
-
 def ao_session_start(vault_path: str = ".") -> dict:
     """
     Start a session. Loads vault context: file listing, North Star,
     active work, palace wings, KG stats. ~2K tokens.
     """
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     result = ao.session_start()
     return {
         "success": result.success,
@@ -70,8 +47,7 @@ def ao_session_start(vault_path: str = ".") -> dict:
 
 def ao_classify(message: str, vault_path: str = ".") -> dict:
     """Classify a user message into one of 15 types."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     c = ao.classify(message)
     return {
         "message_type": c.message_type.value,
@@ -83,8 +59,7 @@ def ao_classify(message: str, vault_path: str = ".") -> dict:
 
 def ao_search(query: str, vault_path: str = ".", limit: int = 5) -> dict:
     """Search the vault with hybrid semantic + keyword search."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=True)
+    ao = Ompa(vault_path=vault_path, enable_semantic=True)
     results = ao.search(query, limit=limit)
     return {
         "results": [
@@ -101,8 +76,7 @@ def ao_search(query: str, vault_path: str = ".", limit: int = 5) -> dict:
 
 def ao_kg_query(entity: str, vault_path: str = ".", as_of: str = None) -> dict:
     """Query the knowledge graph for an entity."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     triples = ao.kg.query_entity(entity, as_of=as_of)
     return {
         "entity": entity,
@@ -130,8 +104,7 @@ def ao_kg_add(
     """
     Add a fact to the knowledge graph.
     """
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     ao.kg.add_triple(
         subject,
         predicate,
@@ -144,22 +117,19 @@ def ao_kg_add(
 
 def ao_kg_stats(vault_path: str = ".") -> dict:
     """Get knowledge graph statistics."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     return ao.kg.stats()
 
 
 def ao_palace_wings(vault_path: str = ".") -> dict:
     """List all palace wings."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     return {"wings": ao.palace.list_wings()}
 
 
 def ao_palace_rooms(wing: str, vault_path: str = ".") -> dict:
     """List rooms in a wing."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     rooms = ao.palace.list_rooms(wing)
     return {"wing": wing, "rooms": rooms}
 
@@ -168,31 +138,27 @@ def ao_palace_tunnel(
     wing_a: str, wing_b: str, room: str, vault_path: str = "."
 ) -> dict:
     """Create a tunnel between two wings."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     ao.palace.create_tunnel(wing_a, wing_b, room)
     return {"success": True, "tunnel": f"{wing_a} <-> {wing_b} via {room}"}
 
 
 def ao_validate(file_path: str, vault_path: str = ".") -> dict:
     """Validate a markdown file."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     return ao.validate_write(file_path)
 
 
 def ao_wrap_up(vault_path: str = ".") -> dict:
     """Run session wrap-up."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     result = ao.stop()
     return {"success": result.success, "output": result.output}
 
 
 def ao_status(vault_path: str = ".") -> dict:
     """Get full status (vault + palace + KG)."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     return {
         "vault": ao.get_stats(),
         "palace": ao.palace.stats(),
@@ -202,8 +168,7 @@ def ao_status(vault_path: str = ".") -> dict:
 
 def ao_orphans(vault_path: str = ".") -> dict:
     """Find orphan notes."""
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     orphans = ao.find_orphans()
     return {
         "orphan_count": len(orphans),
@@ -216,8 +181,7 @@ def ao_kg_populate(vault_path: str = ".") -> dict:
     Populate the knowledge graph from all vault notes.
     Extracts wikilinks, tags, folder structure, and dates into triples.
     """
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=False)
+    ao = Ompa(vault_path=vault_path, enable_semantic=False)
     count = ao.kg_populate()
     stats = ao.kg.stats()
     return {
@@ -232,15 +196,15 @@ def ao_sync(vault_path: str = ".") -> dict:
     """
     Full sync: rebuild KG, palace, and search index from vault.
     """
-    AO = _load_core()
-    ao = AO(vault_path=vault_path, enable_semantic=True)
+    ao = Ompa(vault_path=vault_path, enable_semantic=True)
     result = ao.sync()
     return {"success": True, **result}
 
 
 def ao_write(arguments: dict) -> dict:
     """Write content to the appropriate vault (auto-classifies in dual mode)."""
-    ao = _make_ompa(arguments, enable_semantic=False)
+    om_pa_args = {k: arguments[k] for k in ['vault_path', 'shared_vault_path', 'personal_vault_path', 'isolation_mode'] if k in arguments}
+    ao = make_ompa(**om_pa_args, enable_semantic=False)
     content = arguments.get("content", "")
     tags_raw = arguments.get("tags", "")
     tags = [t.strip() for t in tags_raw.split(",") if t.strip()] if tags_raw else []
@@ -255,7 +219,8 @@ def ao_write(arguments: dict) -> dict:
 
 def ao_export(arguments: dict) -> dict:
     """Export a note from personal vault to shared vault."""
-    ao = _make_ompa(arguments, enable_semantic=False)
+    om_pa_args = {k: arguments[k] for k in ['vault_path', 'shared_vault_path', 'personal_vault_path', 'isolation_mode'] if k in arguments}
+    ao = make_ompa(**om_pa_args, enable_semantic=False)
     return ao.export_to_shared(
         note_path=arguments["note_path"],
         confirm=arguments.get("confirm", True),
@@ -265,7 +230,8 @@ def ao_export(arguments: dict) -> dict:
 
 def ao_import(arguments: dict) -> dict:
     """Import a note from shared vault to personal vault."""
-    ao = _make_ompa(arguments, enable_semantic=False)
+    om_pa_args = {k: arguments[k] for k in ['vault_path', 'shared_vault_path', 'personal_vault_path', 'isolation_mode'] if k in arguments}
+    ao = make_ompa(**om_pa_args, enable_semantic=False)
     return ao.import_to_personal(
         note_path=arguments["note_path"],
         link_back=arguments.get("link_back", True),

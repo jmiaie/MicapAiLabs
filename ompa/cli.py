@@ -11,27 +11,10 @@ from rich.console import Console
 from rich.table import Table
 
 from ompa import Ompa
+from ompa.config import make_ompa
 
 app = typer.Typer(help="OMPA — Universal AI agent memory layer")
 console = Console()
-
-
-def _make_ompa(
-    vault_path: Path = None,
-    shared_vault: Path = None,
-    personal_vault: Path = None,
-    isolation_mode: str = "strict",
-    enable_semantic: bool = False,
-) -> Ompa:
-    """Create an Ompa instance, supporting both single and dual vault modes."""
-    if shared_vault and personal_vault:
-        return Ompa(
-            shared_vault_path=shared_vault,
-            personal_vault_path=personal_vault,
-            isolation_mode=isolation_mode,
-            enable_semantic=enable_semantic,
-        )
-    return Ompa(vault_path or Path("."), enable_semantic=enable_semantic)
 
 
 @app.command()
@@ -47,9 +30,9 @@ def init(
         # Dual-vault init
         Vault(shared_vault)
         Vault(personal_vault)
-        ao = _make_ompa(
-            shared_vault=shared_vault,
-            personal_vault=personal_vault,
+        ao = make_ompa(
+            shared_vault_path=shared_vault,
+            personal_vault_path=personal_vault,
             enable_semantic=False,
         )
         shared_stats = ao.get_stats()
@@ -131,7 +114,7 @@ def search(
     personal_vault: Optional[Path] = typer.Option(None, help="Personal vault path"),
 ):
     """Search the vault semantically."""
-    ao = _make_ompa(vault_path, shared_vault, personal_vault, enable_semantic=True)
+    ao = make_ompa(vault_path, shared_vault, personal_vault, enable_semantic=True)
     vaults = [vault] if vault and vault != "both" else None
     if vault == "both":
         vaults = ["shared", "personal"]
@@ -355,7 +338,7 @@ def sync(
     personal_vault: Optional[Path] = typer.Option(None, help="Personal vault path"),
 ):
     """Full sync: rebuild KG, palace, and search index from vault."""
-    ao = _make_ompa(vault_path, shared_vault, personal_vault, enable_semantic=True)
+    ao = make_ompa(vault_path, shared_vault, personal_vault, enable_semantic=True)
     result = ao.sync()
     console.print("[green]Full sync complete![/green]")
     console.print(f"  KG triples: {result['kg_triples']}")
@@ -377,7 +360,7 @@ def write_note(
     vault_path: Path = Path("."),
 ):
     """Write content to the appropriate vault (auto-classifies in dual mode)."""
-    ao = _make_ompa(vault_path, shared_vault, personal_vault, enable_semantic=False)
+    ao = make_ompa(vault_path, shared_vault, personal_vault, enable_semantic=False)
     tag_list = [t.strip() for t in tags.split(",")] if tags else []
     result = ao.write(content, file_path=file_path, tags=tag_list, vault=vault)
     console.print(f"[green]Written to {result['vault']} vault[/green]")
@@ -394,7 +377,7 @@ def export(
     confirm: bool = typer.Option(False, help="Skip confirmation, export directly"),
 ):
     """Export a note from personal vault to shared vault."""
-    ao = _make_ompa(shared_vault=shared_vault, personal_vault=personal_vault)
+    ao = make_ompa(shared_vault_path=shared_vault, personal_vault_path=personal_vault)
     result = ao.export_to_shared(note_path, confirm=not confirm, sanitize=sanitize)
     if result.get("action") == "preview":
         console.print("[yellow]Preview (run with --confirm to export):[/yellow]")
@@ -416,7 +399,7 @@ def import_note(
     link_back: bool = typer.Option(True, help="Maintain reference to original"),
 ):
     """Import a note from shared vault to personal vault."""
-    ao = _make_ompa(shared_vault=shared_vault, personal_vault=personal_vault)
+    ao = make_ompa(shared_vault_path=shared_vault, personal_vault_path=personal_vault)
     result = ao.import_to_personal(note_path, link_back=link_back)
     if result.get("success"):
         console.print("[green]Imported to personal vault[/green]")
