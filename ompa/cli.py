@@ -575,6 +575,40 @@ def doctor(
         console.print("\n[green]✓ Vault is healthy[/green]")
 
 
+@app.command()
+def migrate_vault(
+    vault_path: Path = Path("."),
+    dry_run: bool = typer.Option(False, help="Show what would change without applying"),
+    force: bool = typer.Option(False, help="Re-run all migrations from scratch"),
+):
+    """Apply pending schema migrations to the vault (.palace/ indexes, WAL mode)."""
+    from ompa.migration import VaultMigrator
+
+    migrator = VaultMigrator()
+    report = migrator.check(vault_path)
+    console.print(str(report))
+
+    if report.is_current and not force:
+        console.print("[green]✓ Vault is up to date — nothing to migrate[/green]")
+        return
+
+    if dry_run:
+        console.print("\n[yellow]Dry run — no changes will be made[/yellow]")
+
+    result = migrator.run(vault_path, dry_run=dry_run, force=force)
+    console.print()
+    console.print(str(result))
+
+    if result.success:
+        console.print(
+            "[green]✓ Migration complete[/green]"
+            if not dry_run
+            else "[yellow]Dry run complete — re-run without --dry-run to apply[/yellow]"
+        )
+    else:
+        console.print(f"[red]✗ {len(result.errors)} migration error(s)[/red]")
+
+
 def main():
     app()
 

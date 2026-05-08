@@ -1,6 +1,6 @@
 [project]
 name = "ompa"
-version = "0.4.2"
+version = "0.6.0-dev"
 description = "Universal AI agent memory layer — vault + palace + temporal knowledge graph"
 readme = "README.md"
 license = {text = "MIT"}
@@ -56,6 +56,10 @@ tiktoken = [
 ]
 s3 = [
     "boto3>=1.26.0",
+]
+faiss = [
+    "faiss-cpu>=1.7.0",
+    "numpy>=1.24.0",
 ]
 all = [
     "ompa[semantic]",

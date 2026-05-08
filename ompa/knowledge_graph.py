@@ -2,6 +2,10 @@
 Knowledge Graph — Temporal Entity-Relationship Graph for OMPA.
 Inspired by MemPalace's knowledge_graph.py. SQLite-based triples with validity windows.
 
+WAL mode is enabled by default for concurrent read performance. Composite indexes
+on (subject, valid_from) and (object, predicate) accelerate timeline and reverse
+lookups on large vaults.
+
 Usage:
     from ompa import KnowledgeGraph
     kg = KnowledgeGraph(db_path="./workspace/.palace/knowledge_graph.sqlite3")
@@ -14,6 +18,7 @@ import hashlib
 import logging
 import re
 import sqlite3
+import threading
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
@@ -53,24 +58,35 @@ class KnowledgeGraph:
     def __init__(self, db_path: str = None):
         self.db_path = Path(db_path or DEFAULT_KG_PATH).expanduser()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._local = threading.local()  # per-thread connection cache
         self._init_db()
+
+    def _get_connection(self) -> sqlite3.Connection:
+        """Return a thread-local connection, creating one if needed."""
+        if not getattr(self._local, "conn", None):
+            conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
+            conn.row_factory = sqlite3.Row
+            # WAL mode: readers don't block writers; writers don't block readers.
+            # Persists in the db file — only needed once, idempotent thereafter.
+            conn.execute("PRAGMA journal_mode=WAL")
+            # NORMAL is safe with WAL and significantly faster than FULL.
+            conn.execute("PRAGMA synchronous=NORMAL")
+            self._local.conn = conn
+        return self._local.conn
 
     @contextmanager
     def _conn(self):
-        """Get a database connection that auto-closes on exit."""
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
+        """Yield the thread-local connection for a single transaction."""
+        conn = self._get_connection()
         try:
             yield conn
             conn.commit()
         except Exception:
             conn.rollback()
             raise
-        finally:
-            conn.close()
 
     def _init_db(self) -> None:
-        """Initialize the database schema."""
+        """Initialize the database schema and indexes."""
         with self._conn() as conn:
             conn.executescript("""
                 CREATE TABLE IF NOT EXISTS entities (
@@ -92,9 +108,18 @@ class KnowledgeGraph:
                     extracted_at TEXT DEFAULT CURRENT_TIMESTAMP
                 );
 
-                CREATE INDEX IF NOT EXISTS idx_triples_subject ON triples(subject);
+                -- Basic lookup indexes
+                CREATE INDEX IF NOT EXISTS idx_triples_subject   ON triples(subject);
                 CREATE INDEX IF NOT EXISTS idx_triples_predicate ON triples(predicate);
-                CREATE INDEX IF NOT EXISTS idx_triples_object ON triples(object);
+                CREATE INDEX IF NOT EXISTS idx_triples_object    ON triples(object);
+
+                -- Composite indexes for timeline queries and reverse lookups
+                CREATE INDEX IF NOT EXISTS idx_triples_subject_date
+                    ON triples(subject, valid_from);
+                CREATE INDEX IF NOT EXISTS idx_triples_object_pred
+                    ON triples(object, predicate);
+                CREATE INDEX IF NOT EXISTS idx_triples_validity
+                    ON triples(valid_from, valid_to);
             """)
 
     def _entity_id(self, name: str) -> str:

@@ -35,9 +35,25 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- `__version__` bumped to `0.5.0-dev`
+- `__version__` bumped to `0.6.0-dev`
 - `SemanticIndex` cosine similarity now uses pure numpy (removes `sentence_transformers.util` dependency from the search path)
 - `ao sync` CLI: added `--backend`, `--remote`, `--message`, `--push` options
+
+---
+
+*(Phase 4 — in development)*
+
+### Added (Phase 4)
+
+- **`AsyncOmpa`** (`ompa/async_api.py`): async-native wrapper — every lifecycle method is a coroutine backed by `ThreadPoolExecutor`; supports `async with AsyncOmpa(...) as ao:` context manager; safe for concurrent multi-agent use
+- **FAISS semantic index** (`ompa/adapters/faiss.py`): `FAISSSemanticIndex` — drop-in for `SemanticIndex` with sub-millisecond ANN search; flat (exact) or IVF (approximate) modes; stores embeddings as `.npy` + FAISS binary index; `ompa[faiss]` optional dep
+- **Vault migration tooling** (`ompa/migration.py`): `VaultMigrator` with `check()` + `run()` + dry-run support; schema versioned via `.palace/schema_version`; current migrations: init palace, add composite KG indexes, enable WAL mode
+- **`ao migrate-vault` CLI command**: runs pending migrations with `--dry-run` and `--force` options
+
+### Changed (Phase 4)
+
+- `KnowledgeGraph`: WAL mode + `PRAGMA synchronous=NORMAL` enabled in `_init_db()`; thread-local connection cache via `threading.local()` (avoids open/close overhead per call); three new composite indexes: `idx_triples_subject_date`, `idx_triples_object_pred`, `idx_triples_validity`
+- `ompa[faiss]` optional dep group added (`faiss-cpu>=1.7.0`)
 
 ---
 

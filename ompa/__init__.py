@@ -25,7 +25,7 @@ Sync backends:
     from ompa.sync import GitSyncBackend, S3SyncBackend, RsyncBackend
 """
 
-__version__ = "0.5.0-dev"
+__version__ = "0.6.0-dev"
 
 from .core import Ompa
 from .vault import Vault, Note, VaultConfig
@@ -36,6 +36,7 @@ from .hooks import HookManager, HookContext, HookResult, Hook
 from .semantic import SemanticIndex, SearchResult
 from .config import DualVaultConfig, IsolationMode, VaultTarget
 from .token_counter import count_tokens
+from .async_api import AsyncOmpa
 
 # Backward compatibility alias
 AgnosticObsidian = Ompa
@@ -61,4 +62,5 @@ __all__ = [
     "IsolationMode",
     "VaultTarget",
     "count_tokens",
+    "AsyncOmpa",
 ]
