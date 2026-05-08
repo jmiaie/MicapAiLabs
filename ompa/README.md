@@ -200,7 +200,7 @@ ao = Ompa(config=config)
 
 ```
 ao init              Initialize a new vault
-ao status            Health check and stats
+ao status            Health check and stats (shows installed vs latest version)
 ao session-start     Inject memory context (use at session start)
 ao classify <msg>    Classify and route a message
 ao search <query>    Semantic search
@@ -214,6 +214,9 @@ ao kg-timeline <e>   Entity timeline
 ao kg-stats          Knowledge graph statistics
 ao validate          Validate vault structure
 ao rebuild-index     Rebuild the semantic index
+ao upgrade           Upgrade ompa to the latest version from PyPI
+ao doctor            Full health check table (version, vault, KG, index, orphans)
+ao migrate-vault     Apply pending vault schema migrations
 ```
 
 ---

@@ -3,6 +3,7 @@ CLI for OMPA.
 Run with: ao <command> or ao-mcp <command>
 """
 
+import sys
 from pathlib import Path
 
 import typer
@@ -14,6 +15,35 @@ from ompa.config import make_ompa
 
 app = typer.Typer(help="OMPA — Universal AI agent memory layer")
 console = Console()
+
+
+def _latest_pypi_version() -> str | None:
+    """Return the latest ompa version from PyPI, or None on any error."""
+    import json
+    import urllib.request
+
+    try:
+        url = "https://pypi.org/pypi/ompa/json"
+        with urllib.request.urlopen(url, timeout=3) as resp:  # noqa: S310
+            data = json.loads(resp.read())
+        return data["info"]["version"]
+    except Exception:
+        return None
+
+
+def _version_banner() -> str:
+    """One-line version status: installed vs latest."""
+    from ompa import __version__
+
+    latest = _latest_pypi_version()
+    if latest is None:
+        return f"ompa [bold]{__version__}[/bold] (could not reach PyPI)"
+    if latest == __version__:
+        return f"ompa [bold green]{__version__}[/bold green] [dim](latest)[/dim]"
+    return (
+        f"ompa [bold yellow]{__version__}[/bold yellow] "
+        f"[dim]→ {latest} available — run [bold]ao upgrade[/bold][/dim]"
+    )
 
 
 @app.command()
@@ -57,6 +87,7 @@ def status(
     """Show vault + palace + KG overview."""
     ao = Ompa(vault_path, enable_semantic=False)
 
+    console.print(_version_banner())
     vault_stats = ao.get_stats()
     palace_stats = ao.palace.stats()
     kg_stats = ao.kg.stats()
@@ -475,6 +506,19 @@ def doctor(
     ao = Ompa(vault_path, enable_semantic=False)
     checks: list[tuple[str, str, str]] = []
 
+    # Version
+    from ompa import __version__
+
+    latest = _latest_pypi_version()
+    if latest is None:
+        checks.append(("INFO", "ompa version", f"{__version__} (PyPI unreachable)"))
+    elif latest == __version__:
+        checks.append(("OK", "ompa version", f"{__version__} (latest)"))
+    else:
+        checks.append(
+            ("WARN", "ompa version", f"{__version__} → {latest} available — run `ao upgrade`")
+        )
+
     # Vault root
     if vault_path.exists():
         checks.append(("OK", "Vault root", str(vault_path.absolute())))
@@ -595,6 +639,45 @@ def migrate_vault(
         )
     else:
         console.print(f"[red]✗ {len(result.errors)} migration error(s)[/red]")
+
+
+@app.command()
+def upgrade(
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
+):
+    """Upgrade ompa to the latest version from PyPI."""
+    from ompa import __version__
+
+    console.print(f"Current version: [bold]{__version__}[/bold]")
+    console.print("Checking PyPI for latest version…")
+
+    latest = _latest_pypi_version()
+    if latest is None:
+        console.print("[red]✗ Could not reach PyPI — check your connection and try again.[/red]")
+        raise typer.Exit(1)
+
+    if latest == __version__:
+        console.print(f"[green]✓ Already on the latest version ({__version__}).[/green]")
+        return
+
+    console.print(f"New version available: [bold green]{latest}[/bold green]")
+
+    if not yes:
+        typer.confirm(f"Upgrade ompa {__version__} → {latest}?", abort=True)
+
+    import subprocess  # noqa: S404
+
+    console.print(f"Running: pip install --upgrade ompa=={latest}")
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-m", "pip", "install", "--upgrade", f"ompa=={latest}"],
+        check=False,
+    )
+
+    if result.returncode == 0:
+        console.print(f"\n[green]✓ Upgraded to ompa {latest}.[/green]")
+    else:
+        console.print("\n[red]✗ pip exited with an error — see output above.[/red]")
+        raise typer.Exit(result.returncode)
 
 
 def main():

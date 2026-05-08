@@ -11,6 +11,25 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.6] — 2026-05-08
+
+### Added
+
+- **`ao upgrade` command**: checks PyPI for the latest ompa version and upgrades in-place via
+  `pip install --upgrade ompa==<latest>` using the current Python interpreter; prompts for
+  confirmation unless `--yes` / `-y` is passed
+- **Version check in `ao status`**: prints a one-line banner showing installed version and whether
+  it is current; shows `→ <latest> available — run ao upgrade` when out of date
+- **Version row in `ao doctor`**: the health-check table now includes an `ompa version` row
+  (OK when current, WARN with upgrade hint when a newer version is available on PyPI)
+
+### Changed
+
+- `__version__` → `1.0.6`
+- README CLI reference updated with `ao upgrade`, `ao doctor`, and `ao migrate-vault` entries
+
+---
+
 ## [1.0.5] — 2026-05-08
 
 ### Fixed
@@ -304,7 +323,8 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.2...v1.0.3
