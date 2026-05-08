@@ -1,0 +1,39 @@
+name: OMPA Publish
+
+# Separate from ompa-ci.yml so the paths filter doesn't block tag-triggered releases.
+# Triggers on any v* tag push — no path filter needed since tags are explicit releases.
+on:
+  push:
+    tags:
+      - "v*"
+
+defaults:
+  run:
+    working-directory: ompa
+
+jobs:
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ompa
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Build package
+        run: |
+          pip install build
+          python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

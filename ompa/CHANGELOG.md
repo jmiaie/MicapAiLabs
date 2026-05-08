@@ -11,6 +11,21 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.2] — 2026-05-08
+
+### Fixed
+
+- Import sort order in `ompa/__init__.py` (ruff I001 — alphabetical order required)
+- Tag-triggered publish now uses a separate `ompa-publish.yml` workflow with no
+  `paths` filter — the `paths` filter on `ompa-ci.yml` was silently blocking
+  tag-triggered runs from reaching the publish job
+
+### Changed
+
+- `__version__` → `1.0.2`
+
+---
+
 ## [1.0.1] — 2026-05-08
 
 ### Removed
@@ -244,7 +259,8 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.2...v1.0.0
 [0.4.2]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.1...v0.4.2
