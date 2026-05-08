@@ -436,9 +436,10 @@ def migrate(
 
 def _sync_remote(vault_path: Path, backend: str, remote: Optional[str], message: str) -> None:
     """Push vault to a remote backend and print the result."""
-    from ompa.sync import GitSyncBackend, S3SyncBackend, RsyncBackend
+    from ompa.sync import GitSyncBackend, S3SyncBackend, RsyncBackend, SyncBackend
 
     b = backend.lower()
+    syncer: Optional[SyncBackend] = None
     try:
         if b == "git":
             parts = (remote or "origin/main").split("/", 1)
@@ -458,6 +459,8 @@ def _sync_remote(vault_path: Path, backend: str, remote: Optional[str], message:
             console.print(f"[red]Unknown backend: {backend!r}. Choose git | s3 | rsync[/red]")
             return
 
+        if syncer is None:
+            return
         result = syncer.push(vault_path, message=message)
         if result.success:
             console.print(f"[green]Remote push ({b}): {result.message}[/green]")

@@ -312,7 +312,7 @@ class Vault:
             and n.path.name not in ["Home.md", "README.md"]
         )
 
-        folder_counts = {}
+        folder_counts: dict[str, int] = {}
         brain_count = 0
         for note in notes:
             folder = note.path.parent.name or "root"
@@ -321,7 +321,7 @@ class Vault:
             # Count brain notes: in brain/ folder OR wing=brain in frontmatter
             if "brain" in note.path.parts:
                 brain_count += 1
-            elif note.frontmatter.get("wing", "").lower() == "brain":
+            elif str(note.frontmatter.get("wing", "")).lower() == "brain":
                 brain_count += 1
 
         # Also count brain folder files not yet in notes list (e.g., empty ones)

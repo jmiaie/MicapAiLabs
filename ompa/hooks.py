@@ -157,11 +157,11 @@ class SessionStartHook(Hook):
             # File listing (truncated)
             lines.append("### Vault Files")
             all_notes = vault.list_notes()
-            for note in sorted(all_notes, key=lambda n: n.path)[:30]:
+            for vault_note in sorted(all_notes, key=lambda n: n.path)[:30]:
                 try:
-                    lines.append(f"- {note.path.relative_to(context.vault_path)}")
+                    lines.append(f"- {vault_note.path.relative_to(context.vault_path)}")
                 except ValueError:
-                    lines.append(f"- {note.path.name}")
+                    lines.append(f"- {vault_note.path.name}")
             if len(all_notes) > 30:
                 lines.append(f"... and {len(all_notes) - 30} more")
 

@@ -149,15 +149,15 @@ class FAISSSemanticIndex:
         if self._faiss_index is None:
             self._build_index()
 
-        if self.use_ivf and not self._faiss_index.is_trained:
+        if self.use_ivf and not getattr(self._faiss_index, "is_trained", True):
             return  # deferred — train after collecting enough vectors
 
-        self._faiss_index.add(vec)
+        self._faiss_index.add(vec)  # type: ignore[attr-defined]
 
     def _train_if_needed(self) -> None:
         if not self.use_ivf or self._faiss_index is None:
             return
-        if self._faiss_index.is_trained:
+        if getattr(self._faiss_index, "is_trained", True):
             return
 
         import numpy as np
@@ -172,8 +172,8 @@ class FAISSSemanticIndex:
             [m["embedding"] for m in self._metadata], dtype="float32"
         )
         faiss.normalize_L2(vecs)
-        self._faiss_index.train(vecs)
-        self._faiss_index.add(vecs)
+        self._faiss_index.train(vecs)  # type: ignore[union-attr]
+        self._faiss_index.add(vecs)  # type: ignore[union-attr]
 
     # ------------------------------------------------------------------
     # Indexing
@@ -247,10 +247,11 @@ class FAISSSemanticIndex:
 
         if self.use_ivf:
             if len(self._metadata) >= self.ivf_nlist:
-                self._faiss_index.train(vecs)
+                self._faiss_index.train(vecs)  # type: ignore[attr-defined]
             else:
                 self._faiss_index = faiss.IndexFlatIP(self.embedding_dim)
-        self._faiss_index.add(vecs)
+        if self._faiss_index is not None:
+            self._faiss_index.add(vecs)
 
     # ------------------------------------------------------------------
     # Search

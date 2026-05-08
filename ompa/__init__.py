@@ -25,7 +25,7 @@ Sync backends:
     from ompa.sync import GitSyncBackend, S3SyncBackend, RsyncBackend
 """
 
-__version__ = "0.6.0-dev"
+__version__ = "1.0.0"
 
 from .core import Ompa
 from .vault import Vault, Note, VaultConfig

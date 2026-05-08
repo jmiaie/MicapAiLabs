@@ -6,6 +6,7 @@ Inspired by MemPalace. Manages the structured metadata that accelerates retrieva
 import json
 from pathlib import Path
 from dataclasses import dataclass, field
+from typing import cast
 from typing import Optional
 
 HALL_TYPES = [
@@ -228,7 +229,7 @@ class Palace:
             )
             connected_room = self.get_room(other_wing, room)
             if connected_room:
-                result["connected"].append(
+                cast("list", result["connected"]).append(
                     {
                         "wing": other_wing,
                         "room": room,

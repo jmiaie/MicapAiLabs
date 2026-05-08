@@ -230,7 +230,7 @@ class VaultMigrator:
                 "fn": self._m3_enable_wal,
             },
         ]
-        return [m for m in all_migrations if m["version"] > from_version]
+        return [m for m in all_migrations if m["version"] > from_version]  # type: ignore[operator]
 
     def _m1_init_palace(self, vault_path: Path) -> None:
         palace_dir = vault_path / ".palace"

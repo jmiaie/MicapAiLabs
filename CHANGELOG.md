@@ -9,51 +9,57 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [1.0.0] — 2026-05-07
+
+First stable release. Semver commitment begins here — no breaking public API changes without a major version bump.
+
 ### Added
 
-- **`ao doctor` command**: rich health check table — vault structure, KG, palace, semantic index, orphan count
-- **MkDocs Material documentation site** (`docs/`) with guides, API reference, and GitHub Pages workflow
-- **Examples**: `examples/langchain_agent/`, `examples/multi_agent/`, `examples/mcp_desktop/`
-- **LongMemEval benchmark** (`benchmarks/longmemeval.py`) — reproducible R@5 measurement
+- **`ao doctor` command**: rich health check table — vault structure, KG, palace, semantic index, orphans
+- **MkDocs Material documentation site** (`docs/`) deployed to GitHub Pages; guides for hooks, MCP, dual-vault, message types; full API reference
+- **LongMemEval benchmark** (`benchmarks/longmemeval.py`) — reproducible R@5 measurement with 20-item built-in dataset
 - **Framework adapters** (`ompa/adapters/`):
   - `OmpaMemory` + `OmpaRetriever` — LangChain `BaseChatMemory`-compatible components (`ompa[langchain]`)
   - `OmpaReader` + `OmpaVaultRetriever` — LlamaIndex reader + retriever (`ompa[llamaindex]`)
-  - `OmpaAgentHooks` — OpenAI Agents SDK `AgentHooks` implementation
-  - `NIMEmbeddingBackend` — NVIDIA NIM API embeddings backend, drop-in for sentence-transformers (`ompa[nim]`)
-- **Token counting** (`ompa/token_counter.py`): tiktoken-precise counting with word-count heuristic fallback (`ompa[tiktoken]`); hooks now report accurate `tokens_hint`
-- **Pluggable embedding backend**: `SemanticIndex` and `Ompa` accept `embedding_backend=` parameter — swap sentence-transformers for NIM or any custom encoder
+  - `OmpaAgentHooks` — OpenAI Agents SDK `AgentHooks` integration
+  - `NIMEmbeddingBackend` — NVIDIA NIM API embeddings, drop-in for sentence-transformers (`ompa[nim]`)
+  - `FAISSSemanticIndex` — sub-millisecond ANN search via FAISS flat/IVF index (`ompa[faiss]`)
+- **`AsyncOmpa`** (`ompa/async_api.py`): full async-native API backed by `ThreadPoolExecutor`; `async with AsyncOmpa(...) as ao:` context manager; safe for concurrent multi-agent workloads
+- **Token counting** (`ompa/token_counter.py`): tiktoken-precise counting with word-count heuristic fallback; `tokens_hint` in `HookResult` is now accurate (`ompa[tiktoken]`)
+- **Pluggable embedding backend**: `SemanticIndex` and `Ompa` accept `embedding_backend=` — swap sentence-transformers for NIM or any `encode(text) -> list[float]` implementation
 - **Multi-node vault sync** (`ompa/sync/`):
-  - `SyncBackend` abstract base class with `push` / `pull` / `status` interface
+  - `SyncBackend` ABC + `SyncResult` dataclass
   - `GitSyncBackend` — add → commit → push / pull --rebase
   - `S3SyncBackend` — S3/R2/MinIO sync via boto3 (`ompa[s3]`)
-  - `RsyncBackend` — rsync over SSH, ideal for Tailscale LAN deployments
+  - `RsyncBackend` — rsync over SSH, Tailscale-ready (excludes semantic index)
   - `ao sync --backend git|s3|rsync --remote <target>` CLI option
-- `ompa[docs]` optional dependency group (`mkdocs-material`, `mkdocstrings`)
-- New optional dep groups: `ompa[langchain]`, `ompa[llamaindex]`, `ompa[nim]`, `ompa[tiktoken]`, `ompa[s3]`
+- **Vault migration tooling** (`ompa/migration.py`): `VaultMigrator.check()` + `.run()` with dry-run; schema versioned via `.palace/schema_version`; three migrations: init palace, composite KG indexes, WAL mode
+- **`ao migrate-vault` CLI command** with `--dry-run` and `--force` flags
+- **Property-based tests** (`tests/test_properties.py`): 15 hypothesis-driven invariant tests across KG, classifier, token counter, vault, and sync
+- **`STABILITY.md`**: documents the stable public API contract and deprecation policy
+- Optional dep groups: `ompa[langchain]`, `ompa[llamaindex]`, `ompa[nim]`, `ompa[tiktoken]`, `ompa[s3]`, `ompa[faiss]`, `ompa[docs]`
 - `ompa[all]` now includes `ompa[semantic]` + `ompa[tiktoken]`
-- Documentation URL updated to `https://jmiaie.github.io/ompa`
+- GitHub scaffolding: issue templates, PR template, `CONTRIBUTING.md`
+- `.markdownlint.json`: project-wide markdown lint config
+- CI: `Security Audit` job (bandit + pip-audit) on every push; `Deploy Docs` workflow for GitHub Pages
 
 ### Changed
 
-- `__version__` bumped to `0.6.0-dev`
-- `SemanticIndex` cosine similarity now uses pure numpy (removes `sentence_transformers.util` dependency from the search path)
+- `__version__` → `1.0.0`; `Development Status` classifier → `Production/Stable`
+- `KnowledgeGraph`: WAL mode + `PRAGMA synchronous=NORMAL`; thread-local connection cache; three new composite indexes (`subject_date`, `object_pred`, `validity`)
+- `SemanticIndex` cosine similarity moved to pure numpy — removes `sentence_transformers.util` from hot path
 - `ao sync` CLI: added `--backend`, `--remote`, `--message`, `--push` options
+- `hooks.py`: `tokens_hint` computed via `count_tokens()` (tiktoken when available, heuristic otherwise)
+- `pyproject.toml`: `Documentation` URL → `https://jmiaie.github.io/ompa`; `mypy`, `hypothesis`, `bandit`, `pip-audit` added to dev deps
 
----
+### Security
 
-*(Phase 4 — in development)*
-
-### Added (Phase 4)
-
-- **`AsyncOmpa`** (`ompa/async_api.py`): async-native wrapper — every lifecycle method is a coroutine backed by `ThreadPoolExecutor`; supports `async with AsyncOmpa(...) as ao:` context manager; safe for concurrent multi-agent use
-- **FAISS semantic index** (`ompa/adapters/faiss.py`): `FAISSSemanticIndex` — drop-in for `SemanticIndex` with sub-millisecond ANN search; flat (exact) or IVF (approximate) modes; stores embeddings as `.npy` + FAISS binary index; `ompa[faiss]` optional dep
-- **Vault migration tooling** (`ompa/migration.py`): `VaultMigrator` with `check()` + `run()` + dry-run support; schema versioned via `.palace/schema_version`; current migrations: init palace, add composite KG indexes, enable WAL mode
-- **`ao migrate-vault` CLI command**: runs pending migrations with `--dry-run` and `--force` options
-
-### Changed (Phase 4)
-
-- `KnowledgeGraph`: WAL mode + `PRAGMA synchronous=NORMAL` enabled in `_init_db()`; thread-local connection cache via `threading.local()` (avoids open/close overhead per call); three new composite indexes: `idx_triples_subject_date`, `idx_triples_object_pred`, `idx_triples_validity`
-- `ompa[faiss]` optional dep group added (`faiss-cpu>=1.7.0`)
+- All 26 source files pass mypy with 0 errors
+- bandit SAST: clean (exit 0, no medium/high findings)
+- pip-audit added to CI for ongoing dependency vulnerability scanning
+- See `SECURITY_AUDIT.md` for full report
 
 ---
 
@@ -224,7 +230,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/ompa/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/jmiaie/ompa/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/jmiaie/ompa/compare/v0.4.2...v1.0.0
 [0.4.2]: https://github.com/jmiaie/ompa/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/jmiaie/ompa/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/jmiaie/ompa/compare/v0.3.1...v0.4.0

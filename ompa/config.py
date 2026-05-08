@@ -8,6 +8,7 @@ import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+from typing import Any
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -132,7 +133,7 @@ class DualVaultConfig:
             return config
 
         try:
-            import yaml
+            import yaml  # type: ignore[import-untyped]
 
             with open(config_path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
@@ -184,14 +185,15 @@ class DualVaultConfig:
             },
         }
 
+        vaults: dict[str, Any] = data["vaults"]  # type: ignore[assignment]
         if self.shared_path:
-            data["vaults"]["shared"] = {
+            vaults["shared"] = {
                 "path": str(self.shared_path),
                 "access": "read-write",
                 "auto_classify": True,
             }
         if self.personal_path:
-            data["vaults"]["personal"] = {
+            vaults["personal"] = {
                 "path": str(self.personal_path),
                 "access": "read-write",
                 "auto_classify": True,

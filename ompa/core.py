@@ -8,7 +8,7 @@ import logging
 import re
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from .vault import Vault, Note, _safe_resolve
 from .palace import Palace
@@ -106,9 +106,9 @@ class Ompa:
         self.classifier = MessageClassifier()
         self.hooks = HookManager(self.vault_path, agent_name=self.agent_name)
 
-        # Semantic search (lazy-loaded)
-        self._semantic = None
-        self._personal_semantic = None
+        # Semantic search (lazy-loaded); annotated explicitly to help mypy
+        self._semantic: Optional[SemanticIndex] = None
+        self._personal_semantic: Optional[SemanticIndex] = None
 
     @property
     def is_dual_vault(self) -> bool:
@@ -400,11 +400,12 @@ class Ompa:
 
     def rebuild_index(self) -> int:
         """Rebuild the semantic index."""
-        if self.semantic is None:
+        semantic = self.semantic  # access property once; narrows Optional
+        if semantic is None:
             return 0
-        self._semantic.clear()
-        count = self._semantic.index_vault(self.vault_path)
-        self._semantic.save_index()
+        semantic.clear()
+        count = semantic.index_vault(self.vault_path)
+        semantic.save_index()
         return count
 
     # -------------------------------------------------------------------------
@@ -572,7 +573,7 @@ class Ompa:
         # Write the note
         from datetime import datetime
 
-        frontmatter = {
+        frontmatter: dict[str, Any] = {
             "date": datetime.now().strftime("%Y-%m-%d"),
             "tags": tags,
             "vault": target.value,
@@ -764,7 +765,7 @@ class Ompa:
             if classification_rules == "auto":
                 target = self.dual_config.classify_content(
                     note.content,
-                    tags=list(note.frontmatter.get("tags", [])),
+                    tags=[str(t) for t in (note.frontmatter.get("tags") or [])],  # type: ignore[attr-defined]
                     file_path=str(note.path),
                 )
             else:

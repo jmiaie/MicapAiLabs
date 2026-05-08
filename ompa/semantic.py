@@ -10,7 +10,7 @@ import logging
 import hashlib
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Optional, Protocol, runtime_checkable
+from typing import Any, Optional, Protocol, runtime_checkable
 
 from .vault import DEFAULT_EXCLUDE_PATTERNS
 
@@ -64,7 +64,7 @@ class SemanticIndex:
         self.model_name = model_name
         self.embedding_dim = embedding_dim
         self.embeddings = None
-        self.chunks = []
+        self.chunks: list[dict[str, Any]] = []
         self._initialized = False
         # Accept a pre-built backend (e.g. NIMEmbeddingBackend) or load lazily
         self._model: Optional[EmbeddingBackend] = embedding_backend
