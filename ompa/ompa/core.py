@@ -8,15 +8,15 @@ import logging
 import re
 import shutil
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-from .vault import Vault, Note, _safe_resolve
-from .palace import Palace
-from .knowledge_graph import KnowledgeGraph
-from .hooks import HookManager, HookResult
-from .classifier import MessageClassifier, Classification
-from .semantic import SemanticIndex, SearchResult
+from .classifier import Classification, MessageClassifier
 from .config import DualVaultConfig, IsolationMode, VaultTarget
+from .hooks import HookManager, HookResult
+from .knowledge_graph import KnowledgeGraph
+from .palace import Palace
+from .semantic import SearchResult, SemanticIndex
+from .vault import Note, Vault, _safe_resolve
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class Ompa:
         self._enable_semantic = enable_semantic
         self._embedding_backend = embedding_backend  # optional custom backend
         self._session_started = False
-        self._last_classification: Optional[Classification] = None
+        self._last_classification: Classification | None = None
 
         # Dual-vault config
         self.dual_config = DualVaultConfig(
@@ -107,8 +107,8 @@ class Ompa:
         self.hooks = HookManager(self.vault_path, agent_name=self.agent_name)
 
         # Semantic search (lazy-loaded); annotated explicitly to help mypy
-        self._semantic: Optional[SemanticIndex] = None
-        self._personal_semantic: Optional[SemanticIndex] = None
+        self._semantic: SemanticIndex | None = None
+        self._personal_semantic: SemanticIndex | None = None
 
     @property
     def is_dual_vault(self) -> bool:
@@ -116,7 +116,7 @@ class Ompa:
         return self.dual_config.is_dual_vault
 
     @property
-    def semantic(self) -> Optional[SemanticIndex]:
+    def semantic(self) -> SemanticIndex | None:
         """Lazy-load semantic index on first access."""
         if self._semantic is None and self._enable_semantic:
             self._semantic = SemanticIndex(
@@ -130,7 +130,7 @@ class Ompa:
         return self._semantic
 
     @property
-    def personal_semantic(self) -> Optional[SemanticIndex]:
+    def personal_semantic(self) -> SemanticIndex | None:
         """Lazy-load personal semantic index."""
         if (
             self._personal_semantic is None
@@ -291,7 +291,7 @@ class Ompa:
         return self.classifier.get_routing_hint(message)
 
     @property
-    def last_classification(self) -> Optional[Classification]:
+    def last_classification(self) -> Classification | None:
         """Get the last classification result."""
         return self._last_classification
 
@@ -360,7 +360,7 @@ class Ompa:
     def _search_vault(
         self,
         vault: Vault,
-        semantic: Optional[SemanticIndex],
+        semantic: SemanticIndex | None,
         query: str,
         limit: int,
         hybrid: bool,
@@ -439,7 +439,7 @@ class Ompa:
             self._auto_update_index(brain_path)
             self._auto_add_to_palace(str(brain_path))
 
-    def get_brain_note(self, name: str) -> Optional[object]:
+    def get_brain_note(self, name: str) -> object | None:
         """Get a brain note by name."""
         return self.vault.get_brain_note(name)
 

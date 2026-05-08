@@ -11,6 +11,21 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.4] — 2026-05-08
+
+### Fixed
+
+- ruff lint: 99 violations fixed across the package (I001 import sort, UP* modernizations,
+  F401 unused imports, B904 raise-from-None, B905 zip strict=, E741 ambiguous names,
+  F841 unused variable, SIM102/SIM114 simplifications)
+- `pyproject.toml`: added `B008` to ruff ignore list (typer requires `Option()` in defaults)
+
+### Changed
+
+- `__version__` → `1.0.4`
+
+---
+
 ## [1.0.3] — 2026-05-08
 
 ### Fixed
@@ -273,7 +288,8 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.0...v1.0.1

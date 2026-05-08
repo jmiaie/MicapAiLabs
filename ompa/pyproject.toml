@@ -1,6 +1,6 @@
 [project]
 name = "ompa"
-version = "1.0.3"
+version = "1.0.4"
 description = "Universal AI agent memory layer — vault + palace + temporal knowledge graph"
 readme = "README.md"
 license = {text = "MIT"}
@@ -91,7 +91,7 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
-ignore = ["E501"]
+ignore = ["E501", "B008"]  # B008: typer requires function calls in argument defaults
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -23,7 +23,6 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +34,10 @@ class Triple:
     subject: str
     predicate: str
     object: str
-    valid_from: Optional[str] = None
-    valid_to: Optional[str] = None
+    valid_from: str | None = None
+    valid_to: str | None = None
     confidence: float = 1.0
-    source_file: Optional[str] = None
+    source_file: str | None = None
 
 
 def _row_to_triple(row: sqlite3.Row) -> Triple:

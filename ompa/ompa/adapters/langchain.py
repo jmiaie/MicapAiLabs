@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ def _require_langchain():
     except ImportError:
         raise ImportError(
             "LangChain is not installed. Install with: pip install ompa[langchain]"
-        )
+        ) from None
 
 
 class OmpaMemory:
