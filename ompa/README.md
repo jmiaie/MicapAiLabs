@@ -5,12 +5,12 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/jmiaie/ompa/actions/workflows/ci.yml"><img src="https://github.com/jmiaie/ompa/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/jmiaie/MicapAiLabs/actions/workflows/ompa-ci.yml"><img src="https://github.com/jmiaie/MicapAiLabs/actions/workflows/ompa-ci.yml/badge.svg" alt="CI"></a>
   <a href="https://pypi.org/project/ompa/"><img src="https://img.shields.io/pypi/v/ompa?color=blue" alt="PyPI"></a>
   <a href="https://pypi.org/project/ompa/"><img src="https://img.shields.io/pypi/dm/ompa?color=blue" alt="Downloads"></a>
   <a href="https://pypi.org/project/ompa/"><img src="https://img.shields.io/pypi/pyversions/ompa" alt="Python"></a>
-  <a href="https://github.com/jmiaie/ompa/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/ompa" alt="License"></a>
-  <a href="https://codecov.io/gh/jmiaie/ompa"><img src="https://codecov.io/gh/jmiaie/ompa/branch/main/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://github.com/jmiaie/MicapAiLabs/blob/main/ompa/LICENSE"><img src="https://img.shields.io/pypi/l/ompa" alt="License"></a>
+  <a href="https://codecov.io/gh/jmiaie/MicapAiLabs"><img src="https://codecov.io/gh/jmiaie/MicapAiLabs/branch/main/graph/badge.svg" alt="Coverage"></a>
   <img src="https://img.shields.io/badge/code%20style-ruff-purple" alt="Ruff">
   <img src="https://img.shields.io/badge/MCP-15%20tools-green" alt="MCP Tools">
 </p>

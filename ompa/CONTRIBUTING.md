@@ -5,7 +5,7 @@ Thanks for your interest in contributing. Here's everything you need to get star
 ## Setup
 
 ```bash
-git clone https://github.com/jmiaie/ompa
+git clone https://github.com/jmiaie/MicapAiLabs
 cd ompa
 pip install -e ".[dev,all]"
 ```
@@ -81,5 +81,5 @@ Update `CHANGELOG.md` under `[Unreleased]` with your change before opening a PR.
 
 ## Reporting bugs
 
-Use the [bug report template](https://github.com/jmiaie/ompa/issues/new?template=bug_report.md).
+Use the [bug report template](https://github.com/jmiaie/MicapAiLabs/issues/new?template=bug_report.md).
 Include a minimal reproduction and your environment details.

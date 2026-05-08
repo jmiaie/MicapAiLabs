@@ -1,9 +1,9 @@
 site_name: OMPA
 site_description: Universal AI agent memory layer — vault + palace + temporal knowledge graph
 site_author: Micap AI
-repo_url: https://github.com/jmiaie/ompa
-repo_name: jmiaie/ompa
-edit_uri: edit/main/docs/
+repo_url: https://github.com/jmiaie/MicapAiLabs
+repo_name: jmiaie/MicapAiLabs
+edit_uri: edit/main/ompa/docs/
 
 theme:
   name: material
@@ -81,6 +81,6 @@ markdown_extensions:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/jmiaie/ompa
+      link: https://github.com/jmiaie/MicapAiLabs
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/ompa/

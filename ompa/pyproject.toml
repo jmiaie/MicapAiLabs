@@ -67,10 +67,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jmiaie/ompa"
-Repository = "https://github.com/jmiaie/ompa"
-Documentation = "https://jmiaie.github.io/ompa"
-"Bug Tracker" = "https://github.com/jmiaie/ompa/issues"
+Homepage = "https://github.com/jmiaie/MicapAiLabs/tree/main/ompa"
+Repository = "https://github.com/jmiaie/MicapAiLabs"
+Documentation = "https://jmiaie.github.io/MicapAiLabs"
+"Bug Tracker" = "https://github.com/jmiaie/MicapAiLabs/issues"
 
 [project.scripts]
 ao = "ompa.cli:main"

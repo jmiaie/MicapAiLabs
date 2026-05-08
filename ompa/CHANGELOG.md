@@ -230,16 +230,16 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/ompa/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/jmiaie/ompa/compare/v0.4.2...v1.0.0
-[0.4.2]: https://github.com/jmiaie/ompa/compare/v0.4.1...v0.4.2
-[0.4.1]: https://github.com/jmiaie/ompa/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/jmiaie/ompa/compare/v0.3.1...v0.4.0
-[0.3.1]: https://github.com/jmiaie/ompa/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/jmiaie/ompa/compare/v0.2.2...v0.3.0
-[0.2.2]: https://github.com/jmiaie/ompa/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/jmiaie/ompa/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/jmiaie/ompa/compare/v0.1.2...v0.2.0
-[0.1.2]: https://github.com/jmiaie/ompa/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/jmiaie/ompa/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/jmiaie/ompa/releases/tag/v0.1.0
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.2...v1.0.0
+[0.4.2]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/jmiaie/MicapAiLabs/compare/v0.3.1...v0.4.0
+[0.3.1]: https://github.com/jmiaie/MicapAiLabs/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/jmiaie/MicapAiLabs/compare/v0.2.2...v0.3.0
+[0.2.2]: https://github.com/jmiaie/MicapAiLabs/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/jmiaie/MicapAiLabs/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/jmiaie/MicapAiLabs/compare/v0.1.2...v0.2.0
+[0.1.2]: https://github.com/jmiaie/MicapAiLabs/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/jmiaie/MicapAiLabs/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/jmiaie/MicapAiLabs/releases/tag/v0.1.0
