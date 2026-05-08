@@ -73,8 +73,8 @@ class FAISSSemanticIndex:
         self._model = None
         self._initialized = False
 
-        self._faiss_index = None     # faiss.Index
-        self._metadata: list[dict] = []   # parallel list: one dict per vector
+        self._faiss_index = None  # faiss.Index
+        self._metadata: list[dict] = []  # parallel list: one dict per vector
 
     # ------------------------------------------------------------------
     # Model / backend init
@@ -90,13 +90,13 @@ class FAISSSemanticIndex:
 
         try:
             from sentence_transformers import SentenceTransformer
+
             self._model = SentenceTransformer(self.model_name)
             self._initialized = True
             return True
         except ImportError:
             logger.warning(
-                "sentence-transformers not installed. "
-                "Install with: pip install ompa[semantic]"
+                "sentence-transformers not installed. Install with: pip install ompa[semantic]"
             )
         except Exception as e:
             logger.warning("Could not load embedding model: %s", e)
@@ -118,11 +118,11 @@ class FAISSSemanticIndex:
     def _require_faiss(self):
         try:
             import faiss
+
             return faiss
         except ImportError:
             raise ImportError(
-                "faiss-cpu (or faiss-gpu) is required. "
-                "Install with: pip install ompa[faiss]"
+                "faiss-cpu (or faiss-gpu) is required. Install with: pip install ompa[faiss]"
             ) from None
 
     def _build_index(self) -> None:
@@ -131,14 +131,15 @@ class FAISSSemanticIndex:
 
         if self.use_ivf and len(self._metadata) >= self.ivf_nlist * 39:
             quantizer = faiss.IndexFlatL2(self.embedding_dim)
-            self._faiss_index = faiss.IndexIVFFlat(
-                quantizer, self.embedding_dim, self.ivf_nlist
-            )
+            self._faiss_index = faiss.IndexIVFFlat(quantizer, self.embedding_dim, self.ivf_nlist)
         else:
-            self._faiss_index = faiss.IndexFlatIP(self.embedding_dim)  # inner product ≈ cosine for normalized vecs
+            self._faiss_index = faiss.IndexFlatIP(
+                self.embedding_dim
+            )  # inner product ≈ cosine for normalized vecs
 
     def _add_vector(self, embedding: list[float]) -> None:
         import numpy as np
+
         faiss = self._require_faiss()
 
         vec = np.array([embedding], dtype="float32")
@@ -159,6 +160,7 @@ class FAISSSemanticIndex:
             return
 
         import numpy as np
+
         faiss = self._require_faiss()
 
         if len(self._metadata) < self.ivf_nlist:
@@ -166,9 +168,7 @@ class FAISSSemanticIndex:
             self._build_index()
             return
 
-        vecs = np.array(
-            [m["embedding"] for m in self._metadata], dtype="float32"
-        )
+        vecs = np.array([m["embedding"] for m in self._metadata], dtype="float32")
         faiss.normalize_L2(vecs)
         self._faiss_index.train(vecs)  # type: ignore[union-attr]
         self._faiss_index.add(vecs)  # type: ignore[union-attr]
@@ -202,12 +202,14 @@ class FAISSSemanticIndex:
                 if not embedding:
                     continue
 
-                self._metadata.append({
-                    "path": path_str,
-                    "chunk_index": i,
-                    "text": chunk,
-                    "embedding": embedding,
-                })
+                self._metadata.append(
+                    {
+                        "path": path_str,
+                        "chunk_index": i,
+                        "text": chunk,
+                        "embedding": embedding,
+                    }
+                )
         except Exception as e:
             logger.warning("Error indexing %s: %s", path, e)
 
@@ -234,6 +236,7 @@ class FAISSSemanticIndex:
     def _rebuild_faiss(self) -> None:
         """Rebuild the FAISS index from all stored metadata."""
         import numpy as np
+
         faiss = self._require_faiss()
 
         self._build_index()
@@ -258,6 +261,7 @@ class FAISSSemanticIndex:
     def search(self, query: str, limit: int = 5, hybrid: bool = True) -> list[SearchResult]:
         """Search using FAISS ANN + optional keyword boost."""
         import numpy as np
+
         faiss = self._require_faiss()
 
         if not self._ensure_model() or not self._metadata or self._faiss_index is None:
@@ -301,12 +305,14 @@ class FAISSSemanticIndex:
                         match_type = "hybrid"
 
                 text = meta["text"]
-                results.append(SearchResult(
-                    path=path,
-                    content_excerpt=text[:300] + "..." if len(text) > 300 else text,
-                    score=final_score,
-                    match_type=match_type,
-                ))
+                results.append(
+                    SearchResult(
+                        path=path,
+                        content_excerpt=text[:300] + "..." if len(text) > 300 else text,
+                        score=final_score,
+                        match_type=match_type,
+                    )
+                )
 
                 if len(results) >= limit:
                     break
@@ -325,12 +331,14 @@ class FAISSSemanticIndex:
         for m in self._metadata:
             if query_lower in m["text"].lower() and m["path"] not in seen:
                 seen.add(m["path"])
-                results.append(SearchResult(
-                    path=m["path"],
-                    content_excerpt=m["text"][:200],
-                    score=1.0,
-                    match_type="keyword",
-                ))
+                results.append(
+                    SearchResult(
+                        path=m["path"],
+                        content_excerpt=m["text"][:200],
+                        score=1.0,
+                        match_type="keyword",
+                    )
+                )
             if len(results) >= limit:
                 break
         return results
@@ -350,17 +358,25 @@ class FAISSSemanticIndex:
 
         meta_file = self.index_path / _META_FILE
         with meta_file.open("w", encoding="utf-8") as f:
-            json.dump({
-                "model": self.model_name,
-                "embedding_dim": self.embedding_dim,
-                "count": len(self._metadata),
-                "chunks": [{k: v for k, v in m.items() if k != "embedding"} for m in self._metadata],
-            }, f)
+            json.dump(
+                {
+                    "model": self.model_name,
+                    "embedding_dim": self.embedding_dim,
+                    "count": len(self._metadata),
+                    "chunks": [
+                        {k: v for k, v in m.items() if k != "embedding"} for m in self._metadata
+                    ],
+                },
+                f,
+            )
 
         emb_file = self.index_path / "embeddings.npy"
         try:
             import numpy as np
-            np.save(str(emb_file), np.array([m["embedding"] for m in self._metadata], dtype="float32"))
+
+            np.save(
+                str(emb_file), np.array([m["embedding"] for m in self._metadata], dtype="float32")
+            )
         except Exception as e:
             logger.warning("Could not save embeddings: %s", e)
 
@@ -383,6 +399,7 @@ class FAISSSemanticIndex:
 
             if emb_file.exists():
                 import numpy as np
+
                 embeddings = np.load(str(emb_file)).tolist()
                 for chunk, emb in zip(chunks, embeddings, strict=False):
                     chunk["embedding"] = emb

@@ -13,7 +13,7 @@ class SyncResult:
 
     success: bool
     backend: str
-    direction: str              # "push" | "pull" | "status"
+    direction: str  # "push" | "pull" | "status"
     files_changed: int = 0
     message: str = ""
     error: str | None = None

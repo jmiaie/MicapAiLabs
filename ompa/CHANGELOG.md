@@ -11,6 +11,22 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.5] — 2026-05-08
+
+### Fixed
+
+- `ruff format`: applied auto-formatter to all 20 source files that had whitespace/line-length
+  differences from ruff's canonical style — this was causing the CI `Lint & Format` job to fail
+
+### Changed
+
+- README: Three-Layer Architecture diagram replaced with a Mermaid flowchart (renders as a
+  graphic on GitHub); added a summary table mapping each layer to what it stores and who reads it
+- README: corrected stale `git clone` URL in Installation section (now points to MicapAiLabs monorepo)
+- `__version__` → `1.0.5`
+
+---
+
 ## [1.0.4] — 2026-05-08
 
 ### Fixed
@@ -288,7 +304,8 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.1...v1.0.2

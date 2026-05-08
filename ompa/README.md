@@ -47,21 +47,32 @@ OMPA solves all three:
 
 ## Three-Layer Architecture
 
+```mermaid
+flowchart TB
+    agent(["🤖 AI Agent"])
+
+    subgraph vault["Layer 1 · Vault"]
+        v["brain/ · work/ · org/ · perf/\nhuman-navigable markdown notes"]
+    end
+
+    subgraph palace["Layer 2 · Palace"]
+        p["wings → rooms → drawers\nhalls · facts · events · tunnels"]
+    end
+
+    subgraph kg["Layer 3 · Knowledge Graph"]
+        k["subject → predicate → object\nSQLite · validity windows · timeline"]
+    end
+
+    agent <-->|"session_start · user_message · stop"| vault
+    vault <--> palace
+    palace <--> kg
 ```
-┌───────────────────────────────────────────────────────────────┐
-│  Layer 1: Vault  (human-navigable markdown)                   │
-│  brain/  work/  org/  perf/  ← obsidian-mind structure        │
-├───────────────────────────────────────────────────────────────┤
-│  Layer 2: Palace  (agent-accessible metadata)                 │
-│  wings → rooms → drawers  (vault file references)             │
-│  halls: facts · events · discoveries · preferences            │
-│  tunnels: cross-wing connections                              │
-├───────────────────────────────────────────────────────────────┤
-│  Layer 3: Knowledge Graph  (temporal triples)                 │
-│  SQLite: subject → predicate → object + validity window       │
-│  Query any entity's history at any point in time              │
-└───────────────────────────────────────────────────────────────┘
-```
+
+| Layer | What it stores | Who reads it |
+|-------|---------------|--------------|
+| **Vault** | Markdown notes — decisions, incidents, wins, learnings | Humans + agents via `ao search` |
+| **Palace** | Structured metadata — wings, rooms, drawers, fact halls | Agent retrieval acceleration |
+| **Knowledge Graph** | Temporal triples with validity windows | `ao kg-query` — any entity, any point in time |
 
 ---
 
@@ -251,7 +262,7 @@ pip install ompa[all]
 pip install ompa[dev]
 
 # From source
-git clone https://github.com/jmiaie/ompa && cd ompa
+git clone https://github.com/jmiaie/MicapAiLabs && cd MicapAiLabs/ompa
 pip install -e ".[all]"
 ```
 

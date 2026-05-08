@@ -76,20 +76,14 @@ class Ompa:
             self.vault = Vault(self.dual_config.shared_path)
             self.palace = Palace(self.dual_config.shared_path / ".palace")
             self.kg = KnowledgeGraph(
-                db_path=str(
-                    self.dual_config.shared_path / ".palace" / "knowledge_graph.sqlite3"
-                )
+                db_path=str(self.dual_config.shared_path / ".palace" / "knowledge_graph.sqlite3")
             )
 
             # Personal vault systems
             self.personal_vault = Vault(self.dual_config.personal_path)
             self.personal_palace = Palace(self.dual_config.personal_path / ".palace")
             self.personal_kg = KnowledgeGraph(
-                db_path=str(
-                    self.dual_config.personal_path
-                    / ".palace"
-                    / "knowledge_graph.sqlite3"
-                )
+                db_path=str(self.dual_config.personal_path / ".palace" / "knowledge_graph.sqlite3")
             )
         else:
             # Single-vault mode (legacy / backward compatible)
@@ -138,14 +132,10 @@ class Ompa:
             and self.dual_config.personal_path
         ):
             self._personal_semantic = SemanticIndex(
-                index_path=self.dual_config.personal_path
-                / ".palace"
-                / "semantic_index",
+                index_path=self.dual_config.personal_path / ".palace" / "semantic_index",
             )
             if not self._personal_semantic.load_index():
-                count = self._personal_semantic.index_vault(
-                    self.dual_config.personal_path
-                )
+                count = self._personal_semantic.index_vault(self.dual_config.personal_path)
                 if count > 0:
                     self._personal_semantic.save_index()
         return self._personal_semantic
@@ -332,9 +322,7 @@ class Ompa:
         # Search shared vault
         if "shared" in vaults:
             all_results.extend(
-                self._search_vault(
-                    self.vault, self.semantic, query, limit, hybrid, wing, room
-                )
+                self._search_vault(self.vault, self.semantic, query, limit, hybrid, wing, room)
             )
 
         # Search personal vault
@@ -464,9 +452,7 @@ class Ompa:
         source: str = None,
     ) -> None:
         """Add a fact to the knowledge graph."""
-        self.kg.add_triple(
-            subject, predicate, object, valid_from=valid_from, source=source
-        )
+        self.kg.add_triple(subject, predicate, object, valid_from=valid_from, source=source)
 
     def kg_query(self, entity: str, as_of: str = None) -> list:
         """Query the knowledge graph."""
@@ -499,9 +485,7 @@ class Ompa:
         # Sync personal vault too if in dual mode
         if self.is_dual_vault:
             p_kg = self.personal_kg.populate_from_vault(self.dual_config.personal_path)
-            p_palace = self.personal_palace.auto_build_from_vault(
-                self.dual_config.personal_path
-            )
+            p_palace = self.personal_palace.auto_build_from_vault(self.dual_config.personal_path)
             result["personal_kg_triples"] = p_kg
             result["personal_palace_wings"] = p_palace
 
@@ -542,23 +526,15 @@ class Ompa:
             target_vault = self.vault
         elif vault:
             target = VaultTarget(vault)
-            target_vault = (
-                self.vault if target == VaultTarget.SHARED else self.personal_vault
-            )
+            target_vault = self.vault if target == VaultTarget.SHARED else self.personal_vault
         elif self.dual_config.isolation_mode == IsolationMode.MANUAL:
             # In manual mode, default to personal (safe default)
             target = self.dual_config.default_vault
-            target_vault = (
-                self.vault if target == VaultTarget.SHARED else self.personal_vault
-            )
+            target_vault = self.vault if target == VaultTarget.SHARED else self.personal_vault
         else:
             # Auto-classify
-            target = self.dual_config.classify_content(
-                content, tags=tags, file_path=file_path
-            )
-            target_vault = (
-                self.vault if target == VaultTarget.SHARED else self.personal_vault
-            )
+            target = self.dual_config.classify_content(content, tags=tags, file_path=file_path)
+            target_vault = self.vault if target == VaultTarget.SHARED else self.personal_vault
 
         # Build file path if not provided
         if not file_path:

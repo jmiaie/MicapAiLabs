@@ -28,6 +28,7 @@ def _cosine_similarity(a, b) -> float:
     """Pure-numpy cosine similarity — no sentence_transformers.util needed."""
     try:
         import numpy as np
+
         a = np.array(a, dtype=float)
         b = np.array(b, dtype=float)
         norm = np.linalg.norm(a) * np.linalg.norm(b)
@@ -268,9 +269,7 @@ class SemanticIndex:
                             else chunk["text"]
                         ),
                         score=combined_score,
-                        match_type=(
-                            "hybrid" if hybrid and keyword_boost > 0 else "semantic"
-                        ),
+                        match_type=("hybrid" if hybrid and keyword_boost > 0 else "semantic"),
                     )
                 )
 

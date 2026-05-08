@@ -180,9 +180,7 @@ class Vault:
             index[note.path.name.lower()] = note.path
         return index
 
-    def _resolve_wikilink(
-        self, link: str, filename_index: dict[str, Path]
-    ) -> Path | None:
+    def _resolve_wikilink(self, link: str, filename_index: dict[str, Path]) -> Path | None:
         """Resolve a wikilink to a file path using multiple strategies."""
         link_lower = link.lower()
 
@@ -221,8 +219,7 @@ class Vault:
         return [
             n
             for n in all_notes
-            if n.path not in linked_files
-            and n.path.name not in ["Home.md", "README.md"]
+            if n.path not in linked_files and n.path.name not in ["Home.md", "README.md"]
         ]
 
     def search_by_name(self, query: str) -> list[Note]:
@@ -269,9 +266,7 @@ class Vault:
 
         note.save()
 
-    def create_from_template(
-        self, template_name: str, target_name: str, **kwargs
-    ) -> Note:
+    def create_from_template(self, template_name: str, target_name: str, **kwargs) -> Note:
         """Create a new note from a template. Both names are sanitized."""
         # Sanitize template name
         safe_template = Path(template_name).name
@@ -308,8 +303,7 @@ class Vault:
         orphan_count = sum(
             1
             for n in notes
-            if n.path not in linked_files
-            and n.path.name not in ["Home.md", "README.md"]
+            if n.path not in linked_files and n.path.name not in ["Home.md", "README.md"]
         )
 
         folder_counts: dict[str, int] = {}
@@ -319,7 +313,10 @@ class Vault:
             folder_counts[folder] = folder_counts.get(folder, 0) + 1
 
             # Count brain notes: in brain/ folder OR wing=brain in frontmatter
-            if "brain" in note.path.parts or str(note.frontmatter.get("wing", "")).lower() == "brain":
+            if (
+                "brain" in note.path.parts
+                or str(note.frontmatter.get("wing", "")).lower() == "brain"
+            ):
                 brain_count += 1
 
         # Also count brain folder files not yet in notes list (e.g., empty ones)
@@ -363,11 +360,7 @@ class Vault:
         if path.name.startswith(".") or path.name.startswith("README."):
             return {"valid": True, "warnings": []}
 
-        if (
-            "templates" in path.parts
-            or "thinking" in path.parts
-            or ".claude" in path.parts
-        ):
+        if "templates" in path.parts or "thinking" in path.parts or ".claude" in path.parts:
             return {"valid": True, "warnings": []}
 
         try:
@@ -384,9 +377,7 @@ class Vault:
                     if "date:" not in fm and "date :" not in fm:
                         warnings.append("Missing 'date' in frontmatter")
                     if "description:" not in fm and "description :" not in fm:
-                        warnings.append(
-                            "Missing 'description' in frontmatter (~150 chars)"
-                        )
+                        warnings.append("Missing 'description' in frontmatter (~150 chars)")
                     if "tags:" not in fm and "tags :" not in fm:
                         warnings.append("Missing 'tags' in frontmatter")
 

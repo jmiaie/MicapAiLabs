@@ -71,24 +71,39 @@ class GitSyncBackend(SyncBackend):
         # Stage changes
         rc, _, err = _git(["add", self.add_pattern], vault_path)
         if rc != 0:
-            return SyncResult(success=False, backend=self.name, direction="push", error=f"git add failed: {err}")
+            return SyncResult(
+                success=False, backend=self.name, direction="push", error=f"git add failed: {err}"
+            )
 
         # Check if there's anything to commit
         rc, stdout, _ = _git(["status", "--porcelain"], vault_path)
         if not stdout.strip():
-            return SyncResult(success=True, backend=self.name, direction="push", message="nothing to commit", files_changed=0)
+            return SyncResult(
+                success=True,
+                backend=self.name,
+                direction="push",
+                message="nothing to commit",
+                files_changed=0,
+            )
 
         files_changed = len([ln for ln in stdout.splitlines() if ln.strip()])
 
         # Commit
         rc, _, err = _git(["commit", "-m", message or "chore: vault sync"], vault_path)
         if rc != 0:
-            return SyncResult(success=False, backend=self.name, direction="push", error=f"git commit failed: {err}")
+            return SyncResult(
+                success=False,
+                backend=self.name,
+                direction="push",
+                error=f"git commit failed: {err}",
+            )
 
         # Push
         rc, _, err = _git(["push", self.remote, self.branch], vault_path)
         if rc != 0:
-            return SyncResult(success=False, backend=self.name, direction="push", error=f"git push failed: {err}")
+            return SyncResult(
+                success=False, backend=self.name, direction="push", error=f"git push failed: {err}"
+            )
 
         logger.info("Git push: %d files → %s/%s", files_changed, self.remote, self.branch)
         return SyncResult(
@@ -105,7 +120,9 @@ class GitSyncBackend(SyncBackend):
         if rc != 0:
             return SyncResult(success=False, backend=self.name, direction="pull", error=err)
 
-        files_changed = len([ln for ln in stdout.splitlines() if ln.strip() and not ln.startswith("Already")])
+        files_changed = len(
+            [ln for ln in stdout.splitlines() if ln.strip() and not ln.startswith("Already")]
+        )
         return SyncResult(
             success=True,
             backend=self.name,

@@ -134,9 +134,7 @@ def ao_palace_rooms(wing: str, vault_path: str = ".") -> dict:
     return {"wing": wing, "rooms": rooms}
 
 
-def ao_palace_tunnel(
-    wing_a: str, wing_b: str, room: str, vault_path: str = "."
-) -> dict:
+def ao_palace_tunnel(wing_a: str, wing_b: str, room: str, vault_path: str = ".") -> dict:
     """Create a tunnel between two wings."""
     ao = Ompa(vault_path=vault_path, enable_semantic=False)
     ao.palace.create_tunnel(wing_a, wing_b, room)
@@ -203,7 +201,11 @@ def ao_sync(vault_path: str = ".") -> dict:
 
 def ao_write(arguments: dict) -> dict:
     """Write content to the appropriate vault (auto-classifies in dual mode)."""
-    om_pa_args = {k: arguments[k] for k in ['vault_path', 'shared_vault_path', 'personal_vault_path', 'isolation_mode'] if k in arguments}
+    om_pa_args = {
+        k: arguments[k]
+        for k in ["vault_path", "shared_vault_path", "personal_vault_path", "isolation_mode"]
+        if k in arguments
+    }
     ao = make_ompa(**om_pa_args, enable_semantic=False)
     content = arguments.get("content", "")
     tags_raw = arguments.get("tags", "")
@@ -219,7 +221,11 @@ def ao_write(arguments: dict) -> dict:
 
 def ao_export(arguments: dict) -> dict:
     """Export a note from personal vault to shared vault."""
-    om_pa_args = {k: arguments[k] for k in ['vault_path', 'shared_vault_path', 'personal_vault_path', 'isolation_mode'] if k in arguments}
+    om_pa_args = {
+        k: arguments[k]
+        for k in ["vault_path", "shared_vault_path", "personal_vault_path", "isolation_mode"]
+        if k in arguments
+    }
     ao = make_ompa(**om_pa_args, enable_semantic=False)
     return ao.export_to_shared(
         note_path=arguments["note_path"],
@@ -230,7 +236,11 @@ def ao_export(arguments: dict) -> dict:
 
 def ao_import(arguments: dict) -> dict:
     """Import a note from shared vault to personal vault."""
-    om_pa_args = {k: arguments[k] for k in ['vault_path', 'shared_vault_path', 'personal_vault_path', 'isolation_mode'] if k in arguments}
+    om_pa_args = {
+        k: arguments[k]
+        for k in ["vault_path", "shared_vault_path", "personal_vault_path", "isolation_mode"]
+        if k in arguments
+    }
     ao = make_ompa(**om_pa_args, enable_semantic=False)
     return ao.import_to_personal(
         note_path=arguments["note_path"],

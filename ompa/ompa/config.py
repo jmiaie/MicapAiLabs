@@ -71,9 +71,7 @@ class DualVaultConfig:
     default_vault: VaultTarget = VaultTarget.PERSONAL
     prompt_on_ambiguous: bool = True
 
-    shared_indicators: list[str] = field(
-        default_factory=lambda: list(DEFAULT_SHARED_INDICATORS)
-    )
+    shared_indicators: list[str] = field(default_factory=lambda: list(DEFAULT_SHARED_INDICATORS))
     personal_indicators: list[str] = field(
         default_factory=lambda: list(DEFAULT_PERSONAL_INDICATORS)
     )

@@ -109,6 +109,7 @@ class OmpaReader:
 
             try:
                 from llama_index.core import Document
+
                 documents.append(
                     Document(
                         text=note.content,
@@ -154,6 +155,7 @@ class OmpaVaultRetriever:
 
         try:
             from llama_index.core.schema import NodeWithScore, TextNode
+
             return [
                 NodeWithScore(
                     node=TextNode(

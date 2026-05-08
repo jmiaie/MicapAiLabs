@@ -56,7 +56,9 @@ class S3SyncBackend(SyncBackend):
         self.endpoint_url = endpoint_url
         self.region_name = region_name
         self.aws_access_key_id = aws_access_key_id or os.environ.get("AWS_ACCESS_KEY_ID")
-        self.aws_secret_access_key = aws_secret_access_key or os.environ.get("AWS_SECRET_ACCESS_KEY")
+        self.aws_secret_access_key = aws_secret_access_key or os.environ.get(
+            "AWS_SECRET_ACCESS_KEY"
+        )
         self.include_palace = include_palace
         self.storage_class = storage_class
         self._client = None
@@ -71,8 +73,7 @@ class S3SyncBackend(SyncBackend):
                 import boto3
             except ImportError:
                 raise ImportError(
-                    "boto3 is required for the S3 backend. "
-                    "Install with: pip install ompa[s3]"
+                    "boto3 is required for the S3 backend. Install with: pip install ompa[s3]"
                 ) from None
             kwargs = {"region_name": self.region_name}
             if self.endpoint_url:
@@ -93,7 +94,13 @@ class S3SyncBackend(SyncBackend):
             rel = f.relative_to(vault_path)
             parts = rel.parts
             # Always include .md files; include .palace/ if enabled
-            if f.suffix == ".md" or self.include_palace and parts and parts[0] == ".palace" and "semantic_index" not in str(rel):
+            if (
+                f.suffix == ".md"
+                or self.include_palace
+                and parts
+                and parts[0] == ".palace"
+                and "semantic_index" not in str(rel)
+            ):
                 files.append(f)
         return files
 
@@ -150,7 +157,7 @@ class S3SyncBackend(SyncBackend):
             for page in pages:
                 for obj in page.get("Contents", []):
                     key = obj["Key"]
-                    rel_key = key[len(self.prefix):]
+                    rel_key = key[len(self.prefix) :]
                     if not rel_key:
                         continue
 

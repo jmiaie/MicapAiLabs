@@ -106,9 +106,7 @@ def search(
     query: str,
     vault_path: Path = Path("."),
     limit: int = 5,
-    vault: str | None = typer.Option(
-        None, help="Which vault: shared, personal, or both"
-    ),
+    vault: str | None = typer.Option(None, help="Which vault: shared, personal, or both"),
     shared_vault: Path | None = typer.Option(None, help="Shared vault path"),
     personal_vault: Path | None = typer.Option(None, help="Personal vault path"),
 ):
@@ -127,9 +125,7 @@ def search(
 
     for r in results:
         excerpt = (
-            r.content_excerpt[:80] + "..."
-            if len(r.content_excerpt) > 80
-            else r.content_excerpt
+            r.content_excerpt[:80] + "..." if len(r.content_excerpt) > 80 else r.content_excerpt
         )
         table.add_row(f"{r.score:.2f}", r.match_type, r.path, excerpt)
 
@@ -216,9 +212,7 @@ def tunnel(
     else:
         console.print(f"[bold]Tunnels between {wing_a} and {wing_b}:[/bold]")
         for t in tunnels:
-            console.print(
-                f"  - {t['wing_a']}/{t['room']} <-> {t['wing_b']}/{t['room']}"
-            )
+            console.print(f"  - {t['wing_a']}/{t['room']} <-> {t['wing_b']}/{t['room']}")
 
 
 @app.command()
@@ -339,7 +333,9 @@ def sync(
         None,
         help="Sync backend: git | s3 | rsync. Omits remote push if not set.",
     ),
-    remote: str | None = typer.Option(None, help="Remote target (git remote, S3 bucket, rsync host)"),
+    remote: str | None = typer.Option(
+        None, help="Remote target (git remote, S3 bucket, rsync host)"
+    ),
     message: str = typer.Option("chore: vault sync", help="Commit/sync message"),
     push: bool = typer.Option(True, help="Push to remote after local sync"),
 ):
@@ -498,9 +494,7 @@ def doctor(
     palace_dir = vault_path / ".palace"
     if palace_dir.exists():
         ps = ao.palace.stats()
-        checks.append(
-            ("OK", ".palace/", f"{ps['wing_count']} wings, {ps['room_count']} rooms")
-        )
+        checks.append(("OK", ".palace/", f"{ps['wing_count']} wings, {ps['room_count']} rooms"))
     else:
         checks.append(("WARN", ".palace/", "Not built — run `ao init`"))
 
@@ -517,9 +511,7 @@ def doctor(
                 )
             )
         else:
-            checks.append(
-                ("WARN", "Knowledge Graph", "Empty — run `ao kg-populate` to fill")
-            )
+            checks.append(("WARN", "Knowledge Graph", "Empty — run `ao kg-populate` to fill"))
     else:
         checks.append(("WARN", "Knowledge Graph", "Not initialized — run `ao init`"))
 
@@ -528,9 +520,7 @@ def doctor(
     if index_path.exists() and any(index_path.iterdir()):
         checks.append(("OK", "Semantic Index", "Present"))
     else:
-        checks.append(
-            ("INFO", "Semantic Index", "Not built — run `ao rebuild-index` (optional)")
-        )
+        checks.append(("INFO", "Semantic Index", "Not built — run `ao rebuild-index` (optional)"))
 
     # Orphans
     try:
@@ -538,9 +528,7 @@ def doctor(
         if not orphan_list:
             checks.append(("OK", "Orphan notes", "None"))
         else:
-            checks.append(
-                ("WARN", "Orphan notes", f"{len(orphan_list)} notes with no wikilinks")
-            )
+            checks.append(("WARN", "Orphan notes", f"{len(orphan_list)} notes with no wikilinks"))
     except Exception:
         checks.append(("WARN", "Orphan notes", "Check failed"))
 
@@ -570,9 +558,7 @@ def doctor(
     if errors:
         console.print(f"\n[red]✗ {errors} error(s), {warns} warning(s)[/red]")
     elif warns:
-        console.print(
-            f"\n[yellow]⚠ {warns} warning(s) — vault operational but incomplete[/yellow]"
-        )
+        console.print(f"\n[yellow]⚠ {warns} warning(s) — vault operational but incomplete[/yellow]")
     else:
         console.print("\n[green]✓ Vault is healthy[/green]")
 

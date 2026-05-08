@@ -72,9 +72,7 @@ class Palace:
 
     # Wing operations
 
-    def create_wing(
-        self, name: str, type: str = "project", keywords: list[str] = None
-    ) -> None:
+    def create_wing(self, name: str, type: str = "project", keywords: list[str] = None) -> None:
         """Create a new wing."""
         if keywords is None:
             keywords = []
@@ -152,14 +150,10 @@ class Palace:
     def add_hall(self, wing: str, room: str, hall_type: str, content: str) -> None:
         """Add content to a hall within a room."""
         if hall_type not in HALL_TYPES:
-            raise ValueError(
-                f"Invalid hall type: {hall_type}. Must be one of {HALL_TYPES}"
-            )
+            raise ValueError(f"Invalid hall type: {hall_type}. Must be one of {HALL_TYPES}")
         if wing not in self._data.get("wings", {}):
             self.create_room(wing, room)
-        self._data["wings"][wing]["rooms"][room].setdefault("halls", {})[
-            hall_type
-        ] = content
+        self._data["wings"][wing]["rooms"][room].setdefault("halls", {})[hall_type] = content
         self._save()
 
     def get_hall(self, wing: str, room: str, hall_type: str) -> str | None:
@@ -223,9 +217,7 @@ class Palace:
             "connected": [],
         }
         for tunnel in result["tunnels"]:
-            other_wing = (
-                tunnel["wing_b"] if tunnel["wing_a"] == wing else tunnel["wing_a"]
-            )
+            other_wing = tunnel["wing_b"] if tunnel["wing_a"] == wing else tunnel["wing_a"]
             connected_room = self.get_room(other_wing, room)
             if connected_room:
                 cast("list", result["connected"]).append(
@@ -234,9 +226,7 @@ class Palace:
                         "room": room,
                         "room_data": connected_room,
                         "hall": (
-                            tunnel["hall_b"]
-                            if tunnel["wing_a"] == wing
-                            else tunnel["hall_a"]
+                            tunnel["hall_b"] if tunnel["wing_a"] == wing else tunnel["hall_a"]
                         ),
                     }
                 )
@@ -274,13 +264,9 @@ class Palace:
         if org_people.exists():
             for note in org_people.glob("*.md"):
                 person_name = note.stem
-                self.create_wing(
-                    person_name, type="person", keywords=[person_name.lower()]
-                )
+                self.create_wing(person_name, type="person", keywords=[person_name.lower()])
                 self.create_room(person_name, "context")
-                self.link_drawer(
-                    person_name, "context", str(note.relative_to(vault_path))
-                )
+                self.link_drawer(person_name, "context", str(note.relative_to(vault_path)))
                 count += 1
 
         self._save()
@@ -293,9 +279,7 @@ class Palace:
         wings = self._data.get("wings", {})
         total_rooms = sum(len(w.get("rooms", {})) for w in wings.values())
         total_drawers = sum(
-            len(r.get("drawers", []))
-            for w in wings.values()
-            for r in w.get("rooms", {}).values()
+            len(r.get("drawers", [])) for w in wings.values() for r in w.get("rooms", {}).values()
         )
         return {
             "wing_count": len(wings),

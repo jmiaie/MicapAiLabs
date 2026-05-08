@@ -60,7 +60,9 @@ class OmpaAgentHooks:
 
         self.vault_path = Path(vault_path)
         self.inject_context_in_system = inject_context_in_system
-        self._ao = Ompa(vault_path=vault_path, agent_name=agent_name, enable_semantic=enable_semantic)
+        self._ao = Ompa(
+            vault_path=vault_path, agent_name=agent_name, enable_semantic=enable_semantic
+        )
         self._session_context: str | None = None
 
     # ------------------------------------------------------------------
@@ -85,15 +87,15 @@ class OmpaAgentHooks:
         self._ao.stop()
         self._session_context = None
 
-    async def on_tool_call_result(
-        self, context: Any, agent: Any, tool: Any, result: Any
-    ) -> None:
+    async def on_tool_call_result(self, context: Any, agent: Any, tool: Any, result: Any) -> None:
         """Called after each tool call. Syncs file writes to palace and KG."""
         try:
             tool_name = getattr(tool, "name", str(tool))
             tool_input: dict[str, Any] = {}
             if hasattr(tool, "input"):
-                tool_input = tool.input if isinstance(tool.input, dict) else {"input": str(tool.input)}
+                tool_input = (
+                    tool.input if isinstance(tool.input, dict) else {"input": str(tool.input)}
+                )
             self._ao.post_tool(tool_name, tool_input)
         except Exception as e:
             logger.debug("OmpaAgentHooks.on_tool_call_result failed: %s", e)

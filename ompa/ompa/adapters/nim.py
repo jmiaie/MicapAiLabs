@@ -66,7 +66,7 @@ class NIMEmbeddingBackend:
         endpoint_url: str = _NIM_DEFAULT_ENDPOINT,
         batch_size: int = 32,
         timeout: float = 30.0,
-        input_type: str = "query",   # "query" or "passage"
+        input_type: str = "query",  # "query" or "passage"
         truncate: str = "END",
     ):
         self.api_key = api_key or os.environ.get("NVIDIA_API_KEY", "")
@@ -82,11 +82,11 @@ class NIMEmbeddingBackend:
         if self._client is None:
             try:
                 import httpx
+
                 self._client = httpx.Client(timeout=self.timeout)
             except ImportError:
                 raise ImportError(
-                    "httpx is required for the NIM backend. "
-                    "Install with: pip install ompa[nim]"
+                    "httpx is required for the NIM backend. Install with: pip install ompa[nim]"
                 ) from None
         return self._client
 
