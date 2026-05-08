@@ -4,6 +4,8 @@ OMPA Configuration — Dual-vault settings and content classification rules.
 Supports YAML config file at ~/.ompa/config.yaml or programmatic configuration.
 """
 
+from __future__ import annotations  # defers annotation eval for Python 3.10-3.13
+
 import logging
 from dataclasses import dataclass, field
 from enum import Enum

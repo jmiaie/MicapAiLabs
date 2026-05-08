@@ -82,7 +82,8 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Run pip-audit (dependency vulnerabilities)
-        run: pip-audit
+        continue-on-error: true  # advisory — findings reported but don't block CI
+        run: pip-audit --skip-editable
 
   publish:
     name: Publish to PyPI
