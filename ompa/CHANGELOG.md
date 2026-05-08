@@ -11,6 +11,20 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.1] — 2026-05-08
+
+### Removed
+
+- Orphaned `ompa/.github/` directory (old per-project `ci.yml`, `docs.yml`, issue templates,
+  PR template) — these files are ignored by GitHub in the MicapAiLabs monorepo; CI is now
+  handled exclusively by root-level `.github/workflows/ompa-ci.yml`
+
+### Changed
+
+- `__version__` → `1.0.1`
+
+---
+
 ## [1.0.0] — 2026-05-07
 
 First stable release. Semver commitment begins here — no breaking public API changes without a major version bump.
@@ -230,7 +244,8 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.2...v1.0.0
 [0.4.2]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.0...v0.4.1
