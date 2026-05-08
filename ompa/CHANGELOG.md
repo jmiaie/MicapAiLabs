@@ -11,6 +11,20 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.3] — 2026-05-08
+
+### Fixed
+
+- `ompa-publish.yml`: set `packages-dir: ompa/dist` so the PyPI publish action finds
+  the built wheel — `defaults: run: working-directory` only applies to `run:` steps,
+  not `uses:` actions, so the action was looking in the wrong directory
+
+### Changed
+
+- `__version__` → `1.0.3`
+
+---
+
 ## [1.0.2] — 2026-05-08
 
 ### Fixed
@@ -259,7 +273,8 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/jmiaie/MicapAiLabs/compare/v0.4.2...v1.0.0
