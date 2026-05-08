@@ -336,17 +336,27 @@ def sync(
     vault_path: Path = Path("."),
     shared_vault: Optional[Path] = typer.Option(None, help="Shared vault path"),
     personal_vault: Optional[Path] = typer.Option(None, help="Personal vault path"),
+    backend: Optional[str] = typer.Option(
+        None,
+        help="Sync backend: git | s3 | rsync. Omits remote push if not set.",
+    ),
+    remote: Optional[str] = typer.Option(None, help="Remote target (git remote, S3 bucket, rsync host)"),
+    message: str = typer.Option("chore: vault sync", help="Commit/sync message"),
+    push: bool = typer.Option(True, help="Push to remote after local sync"),
 ):
-    """Full sync: rebuild KG, palace, and search index from vault."""
+    """Full sync: rebuild KG + palace + index, then optionally push to remote."""
     ao = make_ompa(vault_path, shared_vault, personal_vault, enable_semantic=True)
     result = ao.sync()
-    console.print("[green]Full sync complete![/green]")
+    console.print("[green]Local sync complete![/green]")
     console.print(f"  KG triples: {result['kg_triples']}")
     console.print(f"  Palace wings: {result['palace_wings']}")
     console.print(f"  Indexed files: {result['indexed_files']}")
     if "personal_kg_triples" in result:
         console.print(f"  Personal KG triples: {result['personal_kg_triples']}")
         console.print(f"  Personal palace wings: {result['personal_palace_wings']}")
+
+    if backend and push:
+        _sync_remote(vault_path, backend, remote, message)
 
 
 @app.command()
@@ -422,6 +432,147 @@ def migrate(
     console.print(f"  Shared notes: {result['shared_notes']}")
     console.print(f"  Personal notes: {result['personal_notes']}")
     console.print(f"  Config saved: {result['config_saved']}")
+
+
+def _sync_remote(vault_path: Path, backend: str, remote: Optional[str], message: str) -> None:
+    """Push vault to a remote backend and print the result."""
+    from ompa.sync import GitSyncBackend, S3SyncBackend, RsyncBackend
+
+    b = backend.lower()
+    try:
+        if b == "git":
+            parts = (remote or "origin/main").split("/", 1)
+            git_remote, branch = (parts[0], parts[1]) if len(parts) == 2 else (parts[0], "main")
+            syncer = GitSyncBackend(remote=git_remote, branch=branch)
+        elif b == "s3":
+            if not remote:
+                console.print("[red]--remote required for S3 backend (bucket name)[/red]")
+                return
+            syncer = S3SyncBackend(bucket=remote)
+        elif b == "rsync":
+            if not remote:
+                console.print("[red]--remote required for rsync backend (user@host:/path)[/red]")
+                return
+            syncer = RsyncBackend(remote=remote)
+        else:
+            console.print(f"[red]Unknown backend: {backend!r}. Choose git | s3 | rsync[/red]")
+            return
+
+        result = syncer.push(vault_path, message=message)
+        if result.success:
+            console.print(f"[green]Remote push ({b}): {result.message}[/green]")
+        else:
+            console.print(f"[red]Remote push ({b}) failed: {result.error}[/red]")
+    except Exception as e:
+        console.print(f"[red]Sync error: {e}[/red]")
+
+
+@app.command()
+def doctor(
+    vault_path: Path = Path("."),
+):
+    """Check vault health — structure, KG, palace, semantic index, orphans."""
+    from rich import box
+
+    ao = Ompa(vault_path, enable_semantic=False)
+    checks: list[tuple[str, str, str]] = []
+
+    # Vault root
+    if vault_path.exists():
+        checks.append(("OK", "Vault root", str(vault_path.absolute())))
+    else:
+        checks.append(("ERROR", "Vault root", f"Not found: {vault_path.absolute()}"))
+
+    # Folder structure
+    for folder in ["brain", "work", "org", "perf"]:
+        fp = vault_path / folder
+        if fp.exists():
+            note_count = len(list(fp.rglob("*.md")))
+            checks.append(("OK", f"{folder}/", f"{note_count} notes"))
+        else:
+            checks.append(("WARN", f"{folder}/", "Missing — run `ao init` to create"))
+
+    # Palace metadata
+    palace_dir = vault_path / ".palace"
+    if palace_dir.exists():
+        ps = ao.palace.stats()
+        checks.append(
+            ("OK", ".palace/", f"{ps['wing_count']} wings, {ps['room_count']} rooms")
+        )
+    else:
+        checks.append(("WARN", ".palace/", "Not built — run `ao init`"))
+
+    # Knowledge graph
+    kg_db = vault_path / ".palace" / "knowledge_graph.sqlite3"
+    if kg_db.exists():
+        ks = ao.kg.stats()
+        if ks["triple_count"] > 0:
+            checks.append(
+                (
+                    "OK",
+                    "Knowledge Graph",
+                    f"{ks['entity_count']} entities, {ks['triple_count']} triples",
+                )
+            )
+        else:
+            checks.append(
+                ("WARN", "Knowledge Graph", "Empty — run `ao kg-populate` to fill")
+            )
+    else:
+        checks.append(("WARN", "Knowledge Graph", "Not initialized — run `ao init`"))
+
+    # Semantic index
+    index_path = vault_path / ".palace" / "semantic_index"
+    if index_path.exists() and any(index_path.iterdir()):
+        checks.append(("OK", "Semantic Index", "Present"))
+    else:
+        checks.append(
+            ("INFO", "Semantic Index", "Not built — run `ao rebuild-index` (optional)")
+        )
+
+    # Orphans
+    try:
+        orphan_list = ao.find_orphans()
+        if not orphan_list:
+            checks.append(("OK", "Orphan notes", "None"))
+        else:
+            checks.append(
+                ("WARN", "Orphan notes", f"{len(orphan_list)} notes with no wikilinks")
+            )
+    except Exception:
+        checks.append(("WARN", "Orphan notes", "Check failed"))
+
+    # Total notes
+    try:
+        vs = ao.get_stats()
+        checks.append(("OK", "Total notes", str(vs["total_notes"])))
+    except Exception:
+        checks.append(("WARN", "Total notes", "Could not read vault"))
+
+    # Render
+    styles = {"OK": "green", "WARN": "yellow", "ERROR": "red", "INFO": "blue"}
+    table = Table(title="OMPA Health Check", box=box.ROUNDED)
+    table.add_column("Status", width=8)
+    table.add_column("Check", min_width=22)
+    table.add_column("Detail")
+
+    for status, check, detail in checks:
+        s = styles.get(status, "white")
+        table.add_row(f"[{s}]{status}[/{s}]", check, detail)
+
+    console.print(table)
+
+    errors = sum(1 for s, _, _ in checks if s == "ERROR")
+    warns = sum(1 for s, _, _ in checks if s == "WARN")
+
+    if errors:
+        console.print(f"\n[red]✗ {errors} error(s), {warns} warning(s)[/red]")
+    elif warns:
+        console.print(
+            f"\n[yellow]⚠ {warns} warning(s) — vault operational but incomplete[/yellow]"
+        )
+    else:
+        console.print("\n[green]✓ Vault is healthy[/green]")
 
 
 def main():

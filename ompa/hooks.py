@@ -12,6 +12,7 @@ from pathlib import Path
 
 from .vault import Vault, Note
 from .classifier import MessageClassifier
+from .token_counter import count_tokens
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -169,7 +170,7 @@ class SessionStartHook(Hook):
                 hook_name=self.name,
                 success=True,
                 output=output,
-                tokens_hint=len(output.split()),  # Rough token estimate
+                tokens_hint=count_tokens(output),
             )
         except Exception as e:
             logger.error("SessionStartHook failed: %s", e, exc_info=True)

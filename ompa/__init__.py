@@ -4,7 +4,8 @@ OMPA — Obsidian-MemPalace-Agnostic
 Universal AI agent memory layer.
 Combines obsidian-mind vault conventions + MemPalace palace structure + temporal knowledge graph.
 
-Works with OpenClaw, Claude Code, Codex, Gemini CLI, or any AI agent.
+Works with any AI agent: Claude Code, OpenClaw, Codex, Gemini CLI, LangChain, LlamaIndex,
+OpenAI Agents SDK, or any custom agent runtime.
 
 Usage:
     from ompa import Ompa
@@ -13,9 +14,18 @@ Usage:
     hint = ao.handle_message("We decided to go with Postgres")
     ao.post_tool("write", {"file_path": "work/active/auth.md"})
     ao.stop()
+
+Framework adapters:
+    from ompa.adapters.langchain import OmpaMemory, OmpaRetriever
+    from ompa.adapters.llamaindex import OmpaReader, OmpaVaultRetriever
+    from ompa.adapters.openai_agents import OmpaAgentHooks
+    from ompa.adapters.nim import NIMEmbeddingBackend
+
+Sync backends:
+    from ompa.sync import GitSyncBackend, S3SyncBackend, RsyncBackend
 """
 
-__version__ = "0.4.1"
+__version__ = "0.5.0-dev"
 
 from .core import Ompa
 from .vault import Vault, Note, VaultConfig
@@ -25,6 +35,7 @@ from .classifier import MessageClassifier, Classification, MessageType
 from .hooks import HookManager, HookContext, HookResult, Hook
 from .semantic import SemanticIndex, SearchResult
 from .config import DualVaultConfig, IsolationMode, VaultTarget
+from .token_counter import count_tokens
 
 # Backward compatibility alias
 AgnosticObsidian = Ompa
@@ -49,4 +60,5 @@ __all__ = [
     "DualVaultConfig",
     "IsolationMode",
     "VaultTarget",
+    "count_tokens",
 ]

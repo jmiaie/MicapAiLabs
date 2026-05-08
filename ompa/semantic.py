@@ -1,6 +1,8 @@
 """
 Semantic search for OMPA.
 Provides hybrid keyword + semantic search across the vault.
+Supports a pluggable embedding backend (sentence-transformers by default,
+or any object with an encode(text: str) -> array interface).
 """
 
 import json
@@ -8,10 +10,30 @@ import logging
 import hashlib
 from pathlib import Path
 from dataclasses import dataclass
+from typing import Optional, Protocol, runtime_checkable
 
 from .vault import DEFAULT_EXCLUDE_PATTERNS
 
 logger = logging.getLogger(__name__)
+
+
+@runtime_checkable
+class EmbeddingBackend(Protocol):
+    """Any object with an encode(text) method can serve as an embedding backend."""
+
+    def encode(self, text: str) -> "list[float]": ...
+
+
+def _cosine_similarity(a, b) -> float:
+    """Pure-numpy cosine similarity — no sentence_transformers.util needed."""
+    try:
+        import numpy as np
+        a = np.array(a, dtype=float)
+        b = np.array(b, dtype=float)
+        norm = np.linalg.norm(a) * np.linalg.norm(b)
+        return float(np.dot(a, b) / norm) if norm > 1e-9 else 0.0
+    except Exception:
+        return 0.0
 
 
 @dataclass
@@ -35,6 +57,7 @@ class SemanticIndex:
         index_path: Path,
         model_name: str = "all-MiniLM-L6-v2",
         embedding_dim: int = 384,
+        embedding_backend: Optional[EmbeddingBackend] = None,
     ):
         self.index_path = Path(index_path)
         self.index_path.mkdir(parents=True, exist_ok=True)
@@ -43,7 +66,10 @@ class SemanticIndex:
         self.embeddings = None
         self.chunks = []
         self._initialized = False
-        self._model = None
+        # Accept a pre-built backend (e.g. NIMEmbeddingBackend) or load lazily
+        self._model: Optional[EmbeddingBackend] = embedding_backend
+        if embedding_backend is not None:
+            self._initialized = True
 
     @property
     def model(self):
@@ -213,14 +239,12 @@ class SemanticIndex:
         try:
             query_embedding = self.model.encode(query)
 
-            from sentence_transformers import util
-
             best_results = []
 
             for chunk in self.chunks:
                 # Semantic similarity
                 chunk_embedding = chunk["embedding"]
-                similarity = util.cos_sim(query_embedding, chunk_embedding)[0][0].item()
+                similarity = _cosine_similarity(query_embedding, chunk_embedding)
 
                 # Keyword boost
                 keyword_boost = 0.0

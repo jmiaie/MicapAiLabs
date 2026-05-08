@@ -49,6 +49,7 @@ class Ompa:
         vault_path: str | Path = None,
         agent_name: str = "agent",
         enable_semantic: bool = True,
+        embedding_backend=None,  # EmbeddingBackend protocol — e.g. NIMEmbeddingBackend
         # Dual-vault parameters
         shared_vault_path: str | Path = None,
         personal_vault_path: str | Path = None,
@@ -56,6 +57,7 @@ class Ompa:
     ):
         self.agent_name = agent_name
         self._enable_semantic = enable_semantic
+        self._embedding_backend = embedding_backend  # optional custom backend
         self._session_started = False
         self._last_classification: Optional[Classification] = None
 
@@ -119,6 +121,7 @@ class Ompa:
         if self._semantic is None and self._enable_semantic:
             self._semantic = SemanticIndex(
                 index_path=self.vault_path / ".palace" / "semantic_index",
+                embedding_backend=self._embedding_backend,
             )
             if not self._semantic.load_index():
                 count = self._semantic.index_vault(self.vault_path)

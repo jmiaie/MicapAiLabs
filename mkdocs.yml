@@ -1,0 +1,86 @@
+site_name: OMPA
+site_description: Universal AI agent memory layer — vault + palace + temporal knowledge graph
+site_author: Micap AI
+repo_url: https://github.com/jmiaie/ompa
+repo_name: jmiaie/ompa
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotate
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_symbol_type_heading: true
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Guides:
+    - Lifecycle Hooks: guides/hooks.md
+    - MCP Server: guides/mcp.md
+    - Dual-Vault: guides/dual-vault.md
+    - Message Types: guides/message-types.md
+  - API Reference:
+    - Ompa: api/ompa.md
+    - Vault: api/vault.md
+    - Palace: api/palace.md
+    - Knowledge Graph: api/kg.md
+    - CLI: api/cli.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jmiaie/ompa
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ompa/

@@ -38,3 +38,13 @@ htmlcov/
 
 # Node (for JS/TS projects if any)
 node_modules/
+
+# Internal dev docs (not for public repo)
+.internal/
+
+# Claude Code local settings
+.claude/
+
+# Coverage reports
+coverage.xml
+*.lcov
