@@ -73,6 +73,20 @@ class KnowledgeGraph:
             self._local.conn = conn
         return self._local.conn
 
+    def close(self) -> None:
+        """Close the current thread's SQLite connection. Required on Windows before
+        deleting the database file (Windows holds an exclusive lock until closed)."""
+        import contextlib
+
+        conn = getattr(self._local, "conn", None)
+        if conn is not None:
+            with contextlib.suppress(Exception):
+                conn.close()
+            self._local.conn = None
+
+    def __del__(self) -> None:
+        self.close()
+
     @contextmanager
     def _conn(self):
         """Yield the thread-local connection for a single transaction."""

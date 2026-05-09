@@ -5,6 +5,7 @@ Run: pytest tests/ -v
 
 import os
 import tempfile
+
 import pytest
 
 
@@ -39,9 +40,7 @@ class TestPalace:
             p = Palace(os.path.join(tmpdir, ".palace"))
             p.create_wing("Orion", type="project")
             p.create_room("Orion", "auth-migration")
-            p.add_hall(
-                "Orion", "auth-migration", "hall_facts", content="Team chose Clerk"
-            )
+            p.add_hall("Orion", "auth-migration", "hall_facts", content="Team chose Clerk")
             hall = p.get_hall("Orion", "auth-migration", "hall_facts")
             assert "Clerk" in hall
 
@@ -285,6 +284,7 @@ class TestVault:
 
     def test_safe_resolve_prefix_collision_blocked(self):
         from pathlib import Path
+
         from ompa.vault import _safe_resolve
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -298,8 +298,9 @@ class TestVault:
                 _safe_resolve(base, "../vault-evil/pwn.md")
 
     def test_note_save_utf8(self):
-        from ompa.vault import Note
         from pathlib import Path
+
+        from ompa.vault import Note
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "unicode.md"
@@ -310,8 +311,9 @@ class TestVault:
 
     def test_safe_resolve_prefix_collision(self):
         """_safe_resolve should block prefix-collision bypasses like vault vs vault-evil."""
-        from ompa.vault import _safe_resolve
         from pathlib import Path
+
+        from ompa.vault import _safe_resolve
 
         with tempfile.TemporaryDirectory() as tmpdir:
             base = Path(tmpdir) / "vault"
@@ -445,7 +447,7 @@ class TestOmpa:
         with tempfile.TemporaryDirectory() as tmpdir:
             ao = Ompa(tmpdir, enable_semantic=False)
             result = ao.session_start()
-            assert result.success == True
+            assert result.success
 
     def test_classify(self):
         from ompa import Ompa
@@ -471,7 +473,7 @@ class TestOmpa:
         with tempfile.TemporaryDirectory() as tmpdir:
             ao = Ompa(tmpdir, enable_semantic=False)
             result = ao.stop()
-            assert result.success == True
+            assert result.success
 
     def test_backward_compat_alias(self):
         """Verify AgnosticObsidian still works as an alias."""
@@ -492,8 +494,9 @@ class TestKGPopulation:
 
     def test_populate_from_note_wikilinks(self):
         """Wikilinks should create links_to triples."""
-        from ompa import KnowledgeGraph
         from pathlib import Path
+
+        from ompa import KnowledgeGraph
 
         with tempfile.TemporaryDirectory() as tmpdir:
             kg = KnowledgeGraph(db_path=os.path.join(tmpdir, "kg.sqlite3"))
@@ -514,8 +517,9 @@ class TestKGPopulation:
 
     def test_populate_from_note_tags(self):
         """Frontmatter tags should create has_tag triples."""
-        from ompa import KnowledgeGraph
         from pathlib import Path
+
+        from ompa import KnowledgeGraph
 
         with tempfile.TemporaryDirectory() as tmpdir:
             kg = KnowledgeGraph(db_path=os.path.join(tmpdir, "kg.sqlite3"))
@@ -526,7 +530,7 @@ class TestKGPopulation:
                 "---\ndate: 2026-04-10\ntags: [auth, security]\n---\nContent here.",
                 encoding="utf-8",
             )
-            count = kg.populate_from_note(note_path, vault_path)
+            kg.populate_from_note(note_path, vault_path)
             triples = kg.query_entity("Tagged")
             tag_triples = [t for t in triples if t.predicate == "has_tag"]
             assert len(tag_triples) == 2
@@ -536,8 +540,9 @@ class TestKGPopulation:
 
     def test_populate_from_note_folders(self):
         """Notes should get in_folder triples from their directory."""
-        from ompa import KnowledgeGraph
         from pathlib import Path
+
+        from ompa import KnowledgeGraph
 
         with tempfile.TemporaryDirectory() as tmpdir:
             kg = KnowledgeGraph(db_path=os.path.join(tmpdir, "kg.sqlite3"))
@@ -548,7 +553,7 @@ class TestKGPopulation:
                 "---\ndate: 2026-04-10\n---\nAuth work note.",
                 encoding="utf-8",
             )
-            count = kg.populate_from_note(note_path, vault_path)
+            kg.populate_from_note(note_path, vault_path)
             triples = kg.query_entity("Auth")
             folder_triples = [t for t in triples if t.predicate == "in_folder"]
             assert len(folder_triples) == 1
@@ -556,8 +561,9 @@ class TestKGPopulation:
 
     def test_populate_from_vault(self):
         """populate_from_vault should scan all notes."""
-        from ompa import KnowledgeGraph
         from pathlib import Path
+
+        from ompa import KnowledgeGraph
 
         with tempfile.TemporaryDirectory() as tmpdir:
             kg = KnowledgeGraph(db_path=os.path.join(tmpdir, "kg.sqlite3"))
@@ -577,8 +583,9 @@ class TestKGPopulation:
 
     def test_session_start_auto_populates_kg(self):
         """session_start should auto-populate KG if empty."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             vault_path = Path(tmpdir)
@@ -596,8 +603,9 @@ class TestKGPopulation:
 
     def test_sync(self):
         """sync() should rebuild KG and palace."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             vault_path = Path(tmpdir)
@@ -626,8 +634,9 @@ class TestKGPopulation:
 
     def test_mcp_kg_populate(self):
         """MCP ao_kg_populate tool should work."""
-        from ompa.mcp_server import handle_call_tool
         from pathlib import Path
+
+        from ompa.mcp_server import handle_call_tool
 
         with tempfile.TemporaryDirectory() as tmpdir:
             vault_path = Path(tmpdir)
@@ -656,8 +665,9 @@ class TestOrphanAndBrainFixes:
 
     def test_orphans_resolve_wikilinks_by_filename(self):
         """Wikilinks should resolve by filename even in subdirectories."""
-        from ompa import Vault
         from pathlib import Path
+
+        from ompa import Vault
 
         with tempfile.TemporaryDirectory() as tmpdir:
             vault = Vault(tmpdir)
@@ -680,8 +690,9 @@ class TestOrphanAndBrainFixes:
 
     def test_orphans_with_md_extension_in_wikilink(self):
         """Wikilinks like [[SOUL.md]] should resolve correctly."""
-        from ompa import Vault
         from pathlib import Path
+
+        from ompa import Vault
 
         with tempfile.TemporaryDirectory() as tmpdir:
             vault = Vault(tmpdir)
@@ -702,8 +713,9 @@ class TestOrphanAndBrainFixes:
 
     def test_brain_notes_count_by_frontmatter_wing(self):
         """Notes with wing=brain in frontmatter should count as brain notes."""
-        from ompa import Vault
         from pathlib import Path
+
+        from ompa import Vault
 
         with tempfile.TemporaryDirectory() as tmpdir:
             vault = Vault(tmpdir)
@@ -727,8 +739,9 @@ class TestOrphanAndBrainFixes:
 
     def test_brain_notes_count_in_brain_folder(self):
         """Notes in brain/ folder should always count."""
-        from ompa import Vault
         from pathlib import Path
+
+        from ompa import Vault
 
         with tempfile.TemporaryDirectory() as tmpdir:
             vault = Vault(tmpdir)
@@ -747,8 +760,9 @@ class TestOrphanAndBrainFixes:
 
     def test_orphan_stats_match_find_orphans(self):
         """get_stats() orphan count should match find_orphans() length."""
-        from ompa import Vault
         from pathlib import Path
+
+        from ompa import Vault
 
         with tempfile.TemporaryDirectory() as tmpdir:
             vault = Vault(tmpdir)
@@ -848,18 +862,17 @@ class TestDualVault:
 
         config = DualVaultConfig()
         assert (
-            config.classify_content("Note", file_path="brain/North Star.md")
-            == VaultTarget.SHARED
+            config.classify_content("Note", file_path="brain/North Star.md") == VaultTarget.SHARED
         )
         assert (
-            config.classify_content("Note", file_path="personal/config.md")
-            == VaultTarget.PERSONAL
+            config.classify_content("Note", file_path="personal/config.md") == VaultTarget.PERSONAL
         )
 
     def test_write_to_shared(self):
         """write() with vault='shared' should write to shared vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -879,8 +892,9 @@ class TestDualVault:
 
     def test_write_to_personal(self):
         """write() with vault='personal' should write to personal vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -900,8 +914,9 @@ class TestDualVault:
 
     def test_write_auto_classify(self):
         """write() without vault= should auto-classify."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -918,8 +933,9 @@ class TestDualVault:
 
     def test_write_path_traversal_blocked(self):
         """write() should reject paths that escape the target vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -934,8 +950,9 @@ class TestDualVault:
 
     def test_export_to_shared(self):
         """export_to_shared should copy note to shared vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -959,8 +976,9 @@ class TestDualVault:
 
     def test_export_to_shared_path_traversal_blocked(self):
         """export_to_shared() should reject note paths outside personal vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -977,8 +995,9 @@ class TestDualVault:
 
     def test_export_sanitizes_content(self):
         """export_to_shared should redact credentials."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -1002,8 +1021,9 @@ class TestDualVault:
 
     def test_import_to_personal(self):
         """import_to_personal should copy note to personal vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -1027,8 +1047,9 @@ class TestDualVault:
 
     def test_import_to_personal_path_traversal_blocked(self):
         """import_to_personal() should reject note paths outside shared vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -1050,6 +1071,7 @@ class TestSemanticIndex:
     def test_index_vault_initializes_model(self, monkeypatch):
         """index_vault() should initialize the model before indexing."""
         from pathlib import Path
+
         from ompa.semantic import SemanticIndex
 
         class DummyEmbedding(list):
@@ -1083,8 +1105,9 @@ class TestSemanticIndex:
 
     def test_cross_vault_search(self):
         """search() with vaults=['shared','personal'] should search both."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -1113,8 +1136,9 @@ class TestSemanticIndex:
 
     def test_isolation_strict_export_preview(self):
         """In strict mode, export with confirm=True should return preview."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -1157,8 +1181,9 @@ class TestSemanticIndex:
 
     def test_export_to_shared_path_traversal_blocked(self):
         """export_to_shared() should reject note paths outside personal vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -1174,8 +1199,9 @@ class TestSemanticIndex:
 
     def test_import_to_personal_path_traversal_blocked(self):
         """import_to_personal() should reject note paths outside shared vault."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -1200,8 +1226,9 @@ class TestSemanticIndex:
 
     def test_dual_vault_sync(self):
         """sync() should sync both vaults in dual mode."""
-        from ompa import Ompa
         from pathlib import Path
+
+        from ompa import Ompa
 
         with tempfile.TemporaryDirectory() as tmpdir:
             shared = Path(tmpdir) / "shared"
@@ -1228,13 +1255,14 @@ class TestSemanticIndex:
             assert result["personal_kg_triples"] > 0
 
 
-class TestSemanticIndex:
-    """Test semantic index behavior."""
+class TestSemanticIndexBehavior:
+    """Test semantic index runtime behavior."""
 
     def test_index_vault_initializes_model(self):
         """index_vault should lazy-init the model if not yet initialized."""
-        from ompa.semantic import SemanticIndex
         from pathlib import Path
+
+        from ompa.semantic import SemanticIndex
 
         with tempfile.TemporaryDirectory() as tmpdir:
             idx = SemanticIndex(index_path=Path(tmpdir) / "idx")

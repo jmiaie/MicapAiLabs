@@ -208,6 +208,14 @@ class Ompa:
         self._session_started = False
         return result
 
+    def close(self) -> None:
+        """Close all open database connections. Call this before deleting the vault
+        on Windows, where SQLite holds an exclusive file lock until explicitly closed."""
+        self.kg.close()
+
+    def __del__(self) -> None:
+        self.close()
+
     def wrap_up(self) -> HookResult:
         """Alias for stop()."""
         return self.stop()

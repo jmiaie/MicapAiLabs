@@ -12,18 +12,12 @@ import tempfile
 
 import pytest
 
-try:
-    from hypothesis import given, settings, assume
-    from hypothesis import strategies as st
+# pytest.importorskip skips the entire module at collection time if hypothesis
+# is not installed — avoids NameError from module-level strategy definitions.
+pytest.importorskip("hypothesis")
 
-    HYPOTHESIS_AVAILABLE = True
-except ImportError:
-    HYPOTHESIS_AVAILABLE = False
-
-pytestmark = pytest.mark.skipif(
-    not HYPOTHESIS_AVAILABLE,
-    reason="hypothesis not installed (pip install hypothesis)",
-)
+from hypothesis import assume, given, settings  # noqa: E402
+from hypothesis import strategies as st  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Strategies
@@ -41,29 +35,53 @@ entity_name = st.text(
     max_size=30,
 )
 
-predicate_name = st.sampled_from([
-    "works_on", "knows", "created", "links_to", "has_tag",
-    "in_folder", "depends_on", "blocks", "owns", "manages",
-])
+predicate_name = st.sampled_from(
+    [
+        "works_on",
+        "knows",
+        "created",
+        "links_to",
+        "has_tag",
+        "in_folder",
+        "depends_on",
+        "blocks",
+        "owns",
+        "manages",
+    ]
+)
 
 iso_date = st.dates(
     min_value=__import__("datetime").date(2020, 1, 1),
     max_value=__import__("datetime").date(2030, 12, 31),
 ).map(str)
 
-message_type_str = st.sampled_from([
-    "DECISION", "INCIDENT", "WIN", "LOSS", "BLOCKER",
-    "QUESTION", "SUGGESTION", "REVIEW", "BUG", "FEATURE",
-    "LEARN", "RETROSPECTIVE", "ALERT", "STATUS", "CHORE",
-])
+message_type_str = st.sampled_from(
+    [
+        "DECISION",
+        "INCIDENT",
+        "WIN",
+        "LOSS",
+        "BLOCKER",
+        "QUESTION",
+        "SUGGESTION",
+        "REVIEW",
+        "BUG",
+        "FEATURE",
+        "LEARN",
+        "RETROSPECTIVE",
+        "ALERT",
+        "STATUS",
+        "CHORE",
+    ]
+)
 
 
 # ---------------------------------------------------------------------------
 # KnowledgeGraph properties
 # ---------------------------------------------------------------------------
 
-class TestKGProperties:
 
+class TestKGProperties:
     @given(subject=entity_name, predicate=predicate_name, obj=entity_name)
     @settings(max_examples=50)
     def test_add_then_query_roundtrip(self, subject, predicate, obj):
@@ -113,8 +131,9 @@ class TestKGProperties:
         assume(subject != obj)
 
         with tempfile.TemporaryDirectory() as tmp:
-            from ompa import KnowledgeGraph
             import datetime
+
+            from ompa import KnowledgeGraph
 
             kg = KnowledgeGraph(db_path=os.path.join(tmp, "kg.sqlite3"))
             kg.add_triple(subject, predicate, obj, valid_from=valid_from)
@@ -126,7 +145,8 @@ class TestKGProperties:
 
             # The triple should not be valid before its start date
             matching = [
-                t for t in results_before
+                t
+                for t in results_before
                 if t.subject == subject and t.predicate == predicate and t.object == obj
             ]
             assert len(matching) == 0, (
@@ -175,17 +195,15 @@ class TestKGProperties:
             # Every triple added for subject should appear in timeline
             for _, predicate, obj in triples:
                 expected = f"{subject} --{predicate}--> {obj}"
-                assert expected in timeline_labels, (
-                    f"Expected '{expected}' in timeline"
-                )
+                assert expected in timeline_labels, f"Expected '{expected}' in timeline"
 
 
 # ---------------------------------------------------------------------------
 # MessageClassifier properties
 # ---------------------------------------------------------------------------
 
-class TestClassifierProperties:
 
+class TestClassifierProperties:
     @given(message=safe_text)
     @settings(max_examples=100)
     def test_classifier_always_returns_valid_type(self, message):
@@ -198,9 +216,7 @@ class TestClassifierProperties:
         assert result.message_type in MessageType, (
             f"Expected valid MessageType, got {result.message_type!r}"
         )
-        assert 0.0 <= result.confidence <= 1.0, (
-            f"Confidence {result.confidence} out of [0,1] range"
-        )
+        assert 0.0 <= result.confidence <= 1.0, f"Confidence {result.confidence} out of [0,1] range"
         assert result.suggested_action, "suggested_action must be non-empty"
 
     @given(message=safe_text)
@@ -218,8 +234,8 @@ class TestClassifierProperties:
 # Token counter properties
 # ---------------------------------------------------------------------------
 
-class TestTokenCounterProperties:
 
+class TestTokenCounterProperties:
     @given(text=st.text(min_size=0, max_size=500))
     @settings(max_examples=100)
     def test_count_tokens_non_negative(self, text):
@@ -238,9 +254,7 @@ class TestTokenCounterProperties:
 
         single = count_tokens(text)
         double = count_tokens(text + " " + text)
-        assert double >= single, (
-            f"double ({double}) should be >= single ({single})"
-        )
+        assert double >= single, f"double ({double}) should be >= single ({single})"
 
     def test_empty_string_zero_tokens(self):
         """Empty string must produce 0 tokens."""
@@ -253,8 +267,8 @@ class TestTokenCounterProperties:
 # Vault properties
 # ---------------------------------------------------------------------------
 
-class TestVaultProperties:
 
+class TestVaultProperties:
     @given(note_name=entity_name, content=safe_text)
     @settings(max_examples=30)
     def test_brain_note_roundtrip(self, note_name, content):
@@ -267,9 +281,9 @@ class TestVaultProperties:
             note = vault.get_brain_note(note_name)
 
             assert note is not None, f"Expected to retrieve brain note '{note_name}'"
-            assert content in note.content, (
-                f"Content {content!r} not found in note"
-            )
+            # Vault strips trailing whitespace (expected markdown behaviour);
+            # compare stripped values so Hypothesis can't falsify with e.g. '0 '.
+            assert content.strip() in note.content.strip(), f"Content {content!r} not found in note"
 
     @given(
         notes=st.lists(
@@ -299,8 +313,8 @@ class TestVaultProperties:
 # SyncResult properties
 # ---------------------------------------------------------------------------
 
-class TestSyncResultProperties:
 
+class TestSyncResultProperties:
     @given(
         files_changed=st.integers(min_value=0, max_value=10000),
         message=safe_text,

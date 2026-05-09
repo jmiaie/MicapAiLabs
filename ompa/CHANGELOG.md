@@ -11,6 +11,30 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.7] — 2026-05-08
+
+### Fixed
+
+- **Windows SQLite file locking**: `KnowledgeGraph.close()` + `__del__` now explicitly close
+  the thread-local connection — prevents `PermissionError [WinError 32]` when temp directories
+  are cleaned up while a connection is still held. `Ompa.close()` + `__del__` propagate to KG.
+- **`test_properties.py` collection crash**: replaced try/except `HYPOTHESIS_AVAILABLE` pattern
+  with `pytest.importorskip("hypothesis")` — the old pattern left `st.*` strategy definitions
+  at module level where they crashed at collection time when hypothesis wasn't installed.
+- **`TestSemanticIndex` duplicate class**: renamed second definition to `TestSemanticIndexBehavior`
+  to resolve `F811` ruff violation.
+- **Test ruff violations**: fixed `E712` (`== True` → truth check), `F841` (unused `count`
+  assignments), `I001` (import sort), `SIM105` (contextlib.suppress), `F811` (duplicate class)
+- **`tests/conftest.py`**: added Windows-safe `TemporaryDirectory` patch
+  (`ignore_cleanup_errors=True`) as belt-and-suspenders for any test that doesn't explicitly
+  call `close()` before temp directory teardown.
+
+### Changed
+
+- `__version__` → `1.0.7`
+
+---
+
 ## [1.0.6] — 2026-05-08
 
 ### Added
@@ -323,7 +347,8 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.6...HEAD
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.7...HEAD
+[1.0.7]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.3...v1.0.4
