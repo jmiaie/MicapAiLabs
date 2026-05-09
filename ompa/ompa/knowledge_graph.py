@@ -54,7 +54,7 @@ def _row_to_triple(row: sqlite3.Row) -> Triple:
 
 
 class KnowledgeGraph:
-    def __init__(self, db_path: str = None):
+    def __init__(self, db_path: str | None = None):
         self.db_path = Path(db_path or DEFAULT_KG_PATH).expanduser()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._local = threading.local()  # per-thread connection cache
@@ -160,7 +160,7 @@ class KnowledgeGraph:
                 (entity_id, name, entity_type),
             )
 
-    def query_entity(self, name: str, as_of: str = None) -> list[Triple]:
+    def query_entity(self, name: str, as_of: str | None = None) -> list[Triple]:
         """
         Query all current triples for an entity.
 
@@ -204,10 +204,10 @@ class KnowledgeGraph:
         subject: str,
         predicate: str,
         object: str,
-        valid_from: str = None,
-        valid_to: str = None,
+        valid_from: str | None = None,
+        valid_to: str | None = None,
         confidence: float = 1.0,
-        source: str = None,
+        source: str | None = None,
     ) -> None:
         """
         Add a fact triple to the knowledge graph.
@@ -252,7 +252,7 @@ class KnowledgeGraph:
                 ),
             )
 
-    def invalidate(self, subject: str, predicate: str, obj: str, ended: str = None) -> None:
+    def invalidate(self, subject: str, predicate: str, obj: str, ended: str | None = None) -> None:
         """
         Invalidate a triple by setting its valid_to date.
         The fact is no longer current but remains queryable historically.
@@ -311,7 +311,7 @@ class KnowledgeGraph:
     # Auto-population from vault
     # -------------------------------------------------------------------------
 
-    def populate_from_note(self, note_path: Path, vault_path: Path = None) -> int:
+    def populate_from_note(self, note_path: Path, vault_path: Path | None = None) -> int:
         """
         Extract and store triples from a single vault note.
 
@@ -401,7 +401,7 @@ class KnowledgeGraph:
 
         return count
 
-    def populate_from_vault(self, vault_path: Path, exclude_patterns: list = None) -> int:
+    def populate_from_vault(self, vault_path: Path, exclude_patterns: list | None = None) -> int:
         """
         Scan all vault notes and populate the knowledge graph.
 

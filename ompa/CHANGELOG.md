@@ -11,6 +11,40 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.8] — 2026-05-08
+
+### Changed
+
+- **Type annotations** (Track 5): replaced implicit `param: type = None` with explicit
+  `param: type | None = None` across 10 source files — vault, knowledge_graph, semantic,
+  config, palace, core, cli, mcp_server, async_api, adapters/faiss. Eliminates the
+  implicit-Optional pattern that mypy flags and that can silently accept wrong types.
+
+### Removed
+
+- **Duplicate test methods** (Track 1): removed 3 tests from `TestSemanticIndex` that
+  were exact copies of tests already in `TestDualVault` (write/export/import path-traversal
+  checks). Test count 99 → 96 with no coverage loss.
+
+### Notes — tracks with no changes
+
+- **Deduplication**: sync backends share a structural pattern but each has genuinely
+  different logic; centralizing would add indirection without reducing complexity.
+- **Type consolidation**: all types defined once and imported cleanly.
+- **Dead code**: no confirmed-dead public API; ruff found no F401 violations.
+- **Circular deps**: `TYPE_CHECKING` guards in config.py and hooks.py already prevent cycles.
+- **Error handling**: all try/except blocks are legitimate optional-dep guards or external
+  API boundaries; none are silently swallowing real bugs.
+- **Deprecated / AI slop**: `AgnosticObsidian` alias is documented in STABILITY.md and
+  tested; no edit-history comments; no stale TODOs found.
+- **File size**: complexity violations in cli.py (doctor, handle_call_tool) and
+  knowledge_graph.py (populate_from_note) reflect domain-inherent branching that can't
+  be reduced without obscuring intent.
+
+- `__version__` → `1.0.8`
+
+---
+
 ## [1.0.7] — 2026-05-08
 
 ### Fixed
@@ -347,7 +381,8 @@ First stable release. Semver commitment begins here — no breaking public API c
 - **Palace navigation**: wings, rooms, drawers, halls, tunnels
 - GitHub Actions CI/CD with matrix testing (Python 3.10–3.13)
 
-[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.7...HEAD
+[Unreleased]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.8...HEAD
+[1.0.8]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/jmiaie/MicapAiLabs/compare/v1.0.4...v1.0.5

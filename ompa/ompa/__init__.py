@@ -25,7 +25,7 @@ Sync backends:
     from ompa.sync import GitSyncBackend, S3SyncBackend, RsyncBackend
 """
 
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 
 from .async_api import AsyncOmpa
 from .classifier import Classification, MessageClassifier, MessageType

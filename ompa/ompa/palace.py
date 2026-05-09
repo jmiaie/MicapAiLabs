@@ -72,7 +72,9 @@ class Palace:
 
     # Wing operations
 
-    def create_wing(self, name: str, type: str = "project", keywords: list[str] = None) -> None:
+    def create_wing(
+        self, name: str, type: str = "project", keywords: list[str] | None = None
+    ) -> None:
         """Create a new wing."""
         if keywords is None:
             keywords = []
