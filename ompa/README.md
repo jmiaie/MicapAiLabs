@@ -1,3 +1,5 @@
+> **Moved:** OMPA development and releases have moved to https://github.com/jmiaie/ompa. PyPI releases of `ompa` publish only from that repository. This folder is an archived copy.
+
 <p align="center">
   <h1 align="center">OMPA</h1>
   <p align="center"><strong>Universal AI Agent Memory Layer</strong></p>
