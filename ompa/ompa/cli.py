@@ -20,11 +20,15 @@ console = Console()
 def _latest_pypi_version() -> str | None:
     """Return the latest ompa version from PyPI, or None on any error."""
     import json
+    import urllib.parse
     import urllib.request
 
     try:
         url = "https://pypi.org/pypi/ompa/json"
-        with urllib.request.urlopen(url, timeout=3) as resp:  # noqa: S310
+        if urllib.parse.urlparse(url).scheme not in ("http", "https"):
+            return None
+        # Scheme validated above (http/https only); URL is a fixed PyPI endpoint.
+        with urllib.request.urlopen(url, timeout=3) as resp:  # noqa: S310  # nosec B310
             data = json.loads(resp.read())
         return data["info"]["version"]
     except Exception:
